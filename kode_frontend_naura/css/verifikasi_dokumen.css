@@ -1,0 +1,369 @@
+:root{
+    --biru-header:#c0edff;
+    --biru-utama:#067fb2;
+    --biru-muda:#4da3ff;
+    --hijau:#2D8659;
+    --merah:#E74A3B;
+    --putih:#ffffff;
+    --abu-bg:#f4f6f8;
+    --abu-border:#e0e0e0;
+    --text:#2c2c2c;
+}
+
+*{
+    box-sizing:border-box;
+    font-family:"Segoe UI",Arial,sans-serif;
+}
+
+body{
+    margin:0;
+    background:var(--abu-bg);
+    color:var(--text);
+}
+
+/* ===== HEADER ===== */
+.header{
+    height:64px;
+    background:var(--biru-header);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+}
+
+.header-left{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.hamburger{
+    font-size:22px;
+    cursor:pointer;
+}
+
+.header-left img{
+    height:36px;
+}
+
+.header-right{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.user-info{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+}
+
+.user-icon img{
+    width:26px;
+    height:26px;
+    display:block;
+}
+
+
+.btn-logout{
+    background:var(--merah);
+    color:white;
+    border:none;
+    padding:6px 14px;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:13px;
+    font-weight:600;
+}
+
+/* ===== LAYOUT ===== */
+.wrapper{
+    display:flex;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+    width:240px;
+    background:var(--putih);
+    border-right:1px solid var(--abu-border);
+    min-height:calc(100vh - 64px);
+    transition:all 0.3s ease;
+}
+
+.sidebar.hide{
+    margin-left:-240px;
+}
+
+.sidebar ul{
+    list-style:none;
+    padding:0;
+    margin:0;
+}
+
+.sidebar ul li{
+    padding:14px 22px;
+    cursor:pointer;
+    position:relative;
+    transition:0.25s ease;
+}
+
+.sidebar ul li::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    width:4px;
+    height:100%;
+    background:var(--biru-utama);
+    opacity:0;
+}
+
+.sidebar ul li:hover{
+    background:#eaf6fc;
+    padding-left:28px;
+}
+
+.sidebar ul li.active{
+    background:#eaf6fc;
+    color:var(--biru-utama);
+    font-weight:600;
+}
+
+.sidebar ul li.active::before{
+    opacity:1;
+}
+
+/* ===== CONTENT ===== */
+.content{
+    flex:1;
+    padding:24px;
+}
+
+/* ===== HEADER KONTEN ===== */
+.section-header{
+    margin-bottom:14px;
+}
+
+/* ===== TABLE ===== */
+.table-box{
+    background:var(--putih);
+    padding:20px;
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+table th,
+table td{
+    padding:12px;
+    border-bottom:1px solid var(--abu-border);
+    font-size:14px;
+    text-align:center;
+}
+
+table th{
+    background:#f9fafb;
+}
+
+/* ===== STATUS ===== */
+.status-menunggu{
+    color:#fbc02d;
+    font-weight:600;
+}
+
+.status-diterima{
+    color:#2D8659;
+    font-weight:600;
+}
+
+.status-ditolak{
+    color:#E74A3B;
+    font-weight:600;
+}
+
+/* ===== AKSI ===== */
+.action-btn{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+}
+
+.action-btn a{
+    width:32px;
+    height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:4px;
+}
+
+.btn-view{ background:var(--biru-muda); }
+.btn-yes{ background:var(--hijau); }
+.btn-no{ background:var(--merah); }
+
+.action-btn img{
+    width:16px;
+    height:16px;
+    filter:brightness(0) invert(1);
+}
+
+/* ===== MODAL DETAIL ===== */
+.modal{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.4);
+    z-index:9999;
+}
+
+.modal-large{
+    width:860px;
+    max-width:92%;
+}
+
+.modal-content{
+    background:var(--putih);
+    padding:20px;
+    border-radius:8px;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+
+    height:80vh;          /* 🔥 BUKAN max-height */
+    overflow-y:auto;      /* 🔥 scroll ke bawah */
+}
+
+
+.close-modal{
+    font-size:22px;
+    cursor:pointer;
+}
+
+/* ===== TOOLBAR EDITOR ===== */
+.editor-toolbar{
+    display:flex;
+    gap:6px;
+    border:1px solid var(--abu-border);
+    padding:6px;
+    border-radius:4px;
+    margin-bottom:6px;   /* 🔥 lebih dekat ke editor */
+    background:#f9fafb;
+}
+
+.editor-toolbar button{
+    background:var(--putih);
+    border:1px solid var(--abu-border);
+    padding:6px 10px;
+    cursor:pointer;
+    border-radius:4px;
+    font-size:14px;
+}
+
+.editor-toolbar button:hover{
+    background:#eaf6fc;
+}
+
+/* ===== AREA EDITOR ===== */
+.editor-area{
+    min-height:180px;    /* 🔥 tidak terlalu tinggi */
+    border:1px solid var(--abu-border);
+    border-radius:4px;
+    padding:10px;
+    font-size:14px;
+    margin-bottom:12px;  /* 🔥 jarak ke lampiran */
+}
+
+.doc-info{
+    display:flex;
+    flex-direction:column;
+    gap:6px;              /* 🔥 lebih rapat */
+    background:#f9fafb;
+    padding:12px 14px;
+    border-radius:6px;
+    margin-bottom:10px;   /* 🔥 jarak lebih kecil */
+    font-size:14px;
+}
+
+
+.file-section{
+    margin-top:8px;
+}
+
+.file-section h4{
+    margin:6px 0 8px;
+    font-size:15px;
+}
+
+.file-section ul{
+    list-style:none;
+    padding:0;
+    margin:0;
+}
+
+.file-section li{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 0;
+    border-bottom:1px dashed var(--abu-border);
+    font-size:14px;
+}
+
+
+.modal-footer{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;               /* 🔥 jarak antar tombol */
+    margin-top:12px;
+}
+
+/* ===== RESET BUTTON MODAL ===== */
+.modal-footer button{
+    appearance:none;
+    -webkit-appearance:none;
+    border:none;
+    outline:none;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:500;
+}
+
+
+/* ===== FIX FINAL BUTTON SIMPAN & KIRIM (TAMBAHAN SAJA) ===== */
+.btn-save,
+.btn-send{
+    line-height:1;            /* 🔥 samakan tinggi teks */
+    height:36px;              /* 🔥 paksa tinggi identik */
+    display:inline-flex;      /* 🔥 align konsisten */
+    align-items:center;
+    justify-content:center;
+    box-sizing:border-box;
+}
+
+/* cegah style bawaan browser */
+.btn-save:focus,
+.btn-send:focus{
+    outline:none;
+    box-shadow:none;
+}
+
+
+
+.modal-header{
+    position:relative;
+}
+
+.close-modal{
+    position:absolute;
+    right:0;
+    top:0;
+}

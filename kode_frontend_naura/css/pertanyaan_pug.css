@@ -1,0 +1,403 @@
+/* ===============================
+   ROOT & RESET
+================================ */
+:root{
+    --biru-header:#c0edff;
+    --biru-utama:#067fb2;
+    --biru-status:#4da3ff;
+    --hijau:#2D8659;
+    --merah:#E74A3B;
+    --abu-bg:#f4f6f8;
+    --abu-border:#e0e0e0;
+    --putih:#ffffff;
+    --text:#2c2c2c;
+}
+
+*{
+    box-sizing:border-box;
+    font-family:"Segoe UI", Arial, sans-serif;
+}
+
+body{
+    margin:0;
+    background:var(--abu-bg);
+    color:var(--text);
+}
+
+/* ===============================
+   HEADER (ADMIN STYLE)
+================================ */
+.header{
+    height:64px;
+    background:var(--biru-header);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+}
+
+.header-left{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.hamburger{
+    font-size:22px;
+    cursor:pointer;
+    user-select:none;
+}
+
+.header-left img{
+    height:36px;
+}
+
+.header-right{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.user-info{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+}
+
+.user-icon img{
+    width:26px;
+    height:26px;
+    display:block;
+}
+
+.btn-logout{
+    background:var(--merah);
+    color:white;
+    border:none;
+    padding:6px 14px;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:13px;
+    font-weight:600;
+}
+
+/* ===============================
+   LAYOUT
+================================ */
+.wrapper{
+    display:flex;
+}
+
+/* ===============================
+   SIDEBAR
+================================ */
+.sidebar{
+    width:240px;
+    background:var(--putih);
+    border-right:1px solid var(--abu-border);
+    min-height:calc(100vh - 64px);
+    transition:0.3s;
+}
+
+.sidebar.hide{
+    margin-left:-240px;
+}
+
+.sidebar ul{
+    list-style:none;
+    padding:0;
+    margin:0;
+}
+
+.sidebar li{
+    padding:14px 22px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.sidebar li:hover{
+    background:#eaf6fc;
+}
+
+.sidebar li.active{
+    background:#eaf6fc;
+    font-weight:600;
+    color:var(--biru-utama);
+}
+
+/* ===============================
+   CONTENT
+================================ */
+.content{
+    flex:1;
+    padding:24px;
+}
+
+.section-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:16px;
+}
+
+.btn-add{
+    background:var(--biru-utama);
+    color:white;
+    border:none;
+    padding:8px 14px;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:13px;
+}
+
+/* ===============================
+   PROGRESS BOX
+================================ */
+.progress-box{
+    background:var(--putih);
+    padding:16px;
+    border-radius:8px;
+    margin-bottom:16px;
+}
+
+.progress-info{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:6px;
+    font-size:14px;
+}
+
+.progress-bar{
+    background:#e0e0e0;
+    height:12px;
+    border-radius:6px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    background:var(--biru-utama);
+    transition:width .3s;
+}
+
+/* ===============================
+   TABLE
+================================ */
+.table-box{
+    background:var(--putih);
+    padding:20px;
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th, td{
+    padding:12px;
+    border-bottom:1px solid var(--abu-border);
+    font-size:14px;
+}
+
+th{
+    background:#f9fafb;
+}
+
+/* ===============================
+   STATUS
+================================ */
+.status-hijau{
+    color:var(--hijau);
+    font-weight:600;
+}
+
+.status-biru{
+    color:var(--biru-status);
+    font-weight:600;
+}
+
+/* ===============================
+   BUTTON AKSI
+================================ */
+.btn-view{
+    background:var(--biru-utama);
+    color:white;
+    border:none;
+    padding:6px 12px;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:13px;
+}
+
+/* ===============================
+   MODAL (BASE)
+================================ */
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.4);
+    z-index:9999;
+}
+
+/* ===============================
+   MODAL DETAIL (SAMAKAN DOKUMEN MASUK)
+================================ */
+.modal-large{
+    width:860px;
+    max-width:92%;
+}
+
+.modal-content{
+    background:var(--putih);
+    padding:20px;
+    border-radius:8px;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    height:80vh;
+    overflow-y:auto;
+}
+
+.modal-header{
+    position:relative;
+    margin-bottom:12px;
+}
+
+.close-modal{
+    position:absolute;
+    right:0;
+    top:0;
+    font-size:22px;
+    cursor:pointer;
+}
+
+/* ===============================
+   INFO PERTANYAAN
+================================ */
+.doc-info{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    background:#f9fafb;
+    padding:12px 14px;
+    border-radius:6px;
+    margin-bottom:10px;
+    font-size:14px;
+}
+
+.doc-info p{
+    margin:0;
+    line-height:1.4;
+}
+
+.doc-info strong{
+    display:inline-block;
+    min-width:120px;
+}
+
+/* ===============================
+   TOOLBAR EDITOR
+================================ */
+.editor-toolbar{
+    display:flex;
+    gap:6px;
+    border:1px solid var(--abu-border);
+    padding:6px;
+    border-radius:4px;
+    margin-bottom:6px;
+    background:#f9fafb;
+}
+
+.editor-toolbar button{
+    background:var(--putih);
+    border:1px solid var(--abu-border);
+    padding:6px 10px;
+    cursor:pointer;
+    border-radius:4px;
+    font-size:14px;
+}
+
+.editor-toolbar button:hover{
+    background:#eaf6fc;
+}
+
+/* ===============================
+   AREA EDITOR
+================================ */
+.editor-area{
+    min-height:180px;
+    border:1px solid var(--abu-border);
+    border-radius:4px;
+    padding:10px;
+    font-size:14px;
+    margin-bottom:12px;
+}
+
+/* ===============================
+   LAMPIRAN
+================================ */
+.lampiran{
+    margin-top:8px;
+}
+
+.lampiran h4{
+    margin:6px 0 8px;
+    font-size:15px;
+}
+
+.lampiran ul{
+    list-style:none;
+    padding:0;
+    margin:0;
+}
+
+.lampiran li{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 0;
+    border-bottom:1px dashed var(--abu-border);
+    font-size:14px;
+}
+
+.lampiran li:last-child{
+    border-bottom:none;
+}
+
+.lampiran a{
+    color:#6a1b9a;
+    text-decoration:underline;
+}
+
+/* ===============================
+   MODAL FOOTER
+================================ */
+.modal-footer{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:12px;
+}
+
+.btn-save{
+    background:var(--hijau);
+    color:white;
+    border:none;
+    padding:8px 16px;
+    border-radius:4px;
+    cursor:pointer;
+}
+
+.btn-send{
+    background:var(--biru-utama);
+    color:white;
+    border:none;
+    padding:8px 16px;
+    border-radius:4px;
+    cursor:pointer;
+}
