@@ -1,47 +1,59 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | SIMPEL DP3A</title>
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+</head>
+<body>
+    <a href="{{ route('home') }}" class="btn-back">
+    ← Kembali ke Beranda
+</a>
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+<div class="login-container">
+
+    <!-- KIRI -->
+    <div class="login-left">
+        <img src="{{ asset('images/DPPPA ver2.png') }}" alt="Logo DP3A">
+        <h2>
+            DINAS PEMBERDAYAAN PEREMPUAN<br>
+            DAN PERLINDUNGAN ANAK<br>
+            KOTA BANJARMASIN
+        </h2>
+    </div>
+
+    <!-- KANAN -->
+    <div class="login-right">
+        <div class="login-box">
+            <h3>SIMPEL DP3A</h3>
+
+            {{-- INI PENTING: pakai route login Laravel --}}
+            <form method="POST" action="{{ route('login') }}">
+                @csrf
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" required>
+                </div>
+
+                <button type="submit" class="btn-login">Masuk</button>
+            </form>
+
         </div>
+    </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+</div>
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+<footer>
+    © Tim PKL TI FT ULM
+</footer>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+<script src="{{ asset('js/login.js') }}"></script>
+</body>
+</html>
