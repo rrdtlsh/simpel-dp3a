@@ -186,7 +186,7 @@
                     if (fullMessage.includes('NIP')) {
                         text = 'NIP tidak ditemukan (Pastikan 18 Digit).';
                     } else if (fullMessage.includes('Password')) {
-                        text = 'Password salah';
+                        text = 'Password yang Anda masukkan salah.';
                     }
 
                     Swal.fire({
