@@ -8,38 +8,39 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Rules\Password;
 
 class LoginRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
-    // Di bagian rules()
     public function rules(): array
     {
         return [
             'nip' => [
                 'required',
-                'numeric',          // Hanya angka
-                'digits_between:1,20', // Batas panjang 1-20 digit
-                'regex:/^\S*$/',    // Tidak boleh ada spasi
+                'numeric',
+                'digits:18',
+                'regex:/^\S*$/',
             ],
             'password' => [
                 'required',
                 'string',
-                'max:20',           // Batasi password max 20 karakter
+                'max:12',
             ],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'nip.required' => 'NIP wajib diisi.',
+            'password.required' => 'Password wajib diisi.',
+            'nip.digits' => 'NIP harus 18 digit.',
+            'nip.numeric' => 'Nama dan Password yang dimasukkan salah.',
+            'nip.regex' => 'Nama dan Password yang dimasukkan salah.',
         ];
     }
 
@@ -52,7 +53,7 @@ class LoginRequest extends FormRequest
 
         if (! $user) {
             // Jika NIP tidak ditemukan, hitung sebagai percobaan gagal
-            RateLimiter::hit($this->throttleKey());
+            RateLimiter::hit($this->throttleKey(), 60);
 
             throw ValidationException::withMessages([
                 'nip' => 'NIP tidak ditemukan.', // Pesan khusus NIP salah
@@ -61,10 +62,10 @@ class LoginRequest extends FormRequest
 
         if (! Auth::attempt($this->only('nip', 'password'), $this->boolean('remember'))) {
             // Jika NIP ada tapi password salah
-            RateLimiter::hit($this->throttleKey());
+            RateLimiter::hit($this->throttleKey(), 60);
 
             throw ValidationException::withMessages([
-                'password' => 'Password salah.', // Pesan khusus Password salah
+                'password' => 'Password yang Anda masukkan salah.', // Pesan khusus Password salah
             ]);
         }
 
@@ -88,11 +89,8 @@ class LoginRequest extends FormRequest
         ]);
     }
 
-    /**
-     * Get the rate limiting throttle key for the request.
-     */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
+        return Str::transliterate(Str::lower($this->input('nip')) . '|' . $this->ip());
     }
 }

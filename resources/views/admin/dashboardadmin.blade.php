@@ -7,7 +7,7 @@
 <div class="header">
     <div class="header-left">
         <div class="hamburger" id="hamburger">☰</div>
-        <img src="{{ asset('images/DPPPA_ver2.png') }}" alt="Logo DP3A">
+        <img src="{{ asset('images/DPPPA ver2.png') }}" alt="Logo DP3A">
     </div>
 
     <div class="header-right">
@@ -28,30 +28,30 @@
 
 <div class="wrapper">
 
-<div class="sidebar" id="sidebar">
-    <ul id="menu">
-        <li class="active">Dashboard</li>
-        <li>Permintaan Dokumen</li>
-        <li>Verifikasi Dokumen</li>
-        <li>Dokumen Masuk</li>
-        <li>Pertanyaan Evaluasi PUG</li>
-    </ul>
-</div>
+    <div class="sidebar" id="sidebar">
+        <ul id="menu">
+            <li class="active">Dashboard</li>
+            <li>Permintaan Dokumen</li>
+            <li>Verifikasi Dokumen</li>
+            <li>Dokumen Masuk</li>
+            <li>Pertanyaan Evaluasi PUG</li>
+        </ul>
+    </div>
 
-<div class="content">
-    <h2>Halo, Bidang Perencanaan!</h2>
+    <div class="content">
+        <h2>Halo, Bidang Perencanaan!</h2>
 
-    <div class="card-container">
-        <div class="card">
-            <h4>Permintaan Anda</h4>
-            <span>12</span>
-        </div>
-        <div class="card">
-            <h4>Total Arsip</h4>
-            <span>58</span>
+        <div class="card-container">
+            <div class="card">
+                <h4>Permintaan Anda</h4>
+                <span>12</span>
+            </div>
+            <div class="card">
+                <h4>Total Arsip</h4>
+                <span>58</span>
+            </div>
         </div>
     </div>
-</div>
 
 </div>
 @endsection

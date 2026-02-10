@@ -1,0 +1,104 @@
+/* public/css/home.css */
+
+/* --- HERO SLIDER STYLE --- */
+.hero {
+    position: relative;
+    height: 45vh;
+    /* Layar Penuh */
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+/* Container Swiper di belakang */
+.mySwiper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    /* Paling belakang */
+}
+
+.swiper-slide {
+    background-size: cover;
+    background-position: center;
+}
+
+/* Overlay Hitam (Agar tulisan terbaca) */
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    /* Hitam transparan 60% */
+    z-index: 2;
+    /* Di atas gambar */
+}
+
+/* Konten Tulisan */
+.hero-content {
+    position: relative;
+    z-index: 3;
+    /* Paling depan */
+    text-align: center;
+    padding: 0 20px;
+    max-width: 800px;
+}
+
+/* --- SECTION PENGUMUMAN --- */
+.section-title {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 0 20px;
+}
+
+/* --- NEWS CARD DENGAN GAMBAR --- */
+.news-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    /* Agar gambar tidak keluar border radius */
+    transition: transform 0.3s ease;
+}
+
+.news-card:hover {
+    transform: translateY(-5px);
+}
+
+.news-img {
+    width: 100%;
+    height: 180px;
+    /* Tinggi gambar fix */
+    object-fit: cover;
+    /* Agar gambar tidak gepeng */
+    display: block;
+}
+
+.news-body {
+    padding: 20px;
+}
+
+.news-badge {
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+.news-title {
+    margin-top: 10px;
+}

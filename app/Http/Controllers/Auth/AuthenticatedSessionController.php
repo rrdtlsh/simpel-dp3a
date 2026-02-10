@@ -29,7 +29,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         // Tambahkan pesan sesi 'success' untuk SweetAlert
-        return redirect()->intended(route('dashboard', absolute: false))
+        return redirect()->intended(route('admin.dashboard', absolute: false))
             ->with('success', 'Login Berhasil! Selamat Datang.');
     }
 
