@@ -46,26 +46,34 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // Coba login
-        if (! Auth::attempt($this->only('nip', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey()); // Hitung kegagalan
+        // Cek apakah NIP ada di database dulu (untuk pesan error spesifik)
+        $user = \App\Models\User::where('nip', $this->input('nip'))->first();
+
+        if (! $user) {
+            // Jika NIP tidak ditemukan, hitung sebagai percobaan gagal
+            RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'nip' => 'NIP atau password salah.', // Pesan error generik (Security Best Practice)
+                'nip' => 'NIP tidak ditemukan.', // Pesan khusus NIP salah
             ]);
         }
 
-        RateLimiter::clear($this->throttleKey()); // Reset jika berhasil
+        if (! Auth::attempt($this->only('nip', 'password'), $this->boolean('remember'))) {
+            // Jika NIP ada tapi password salah
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'password' => 'Password salah.', // Pesan khusus Password salah
+            ]);
+        }
+
+        RateLimiter::clear($this->throttleKey());
     }
 
-    /**
-     * Ensure the login request is not rate limited.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) { // Batas 5 kali salah
+        // Ubah batas percobaan: 3 kali, delay 60 detik (1 menit)
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 3)) {
             return;
         }
 
