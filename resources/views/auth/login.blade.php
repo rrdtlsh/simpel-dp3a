@@ -12,7 +12,7 @@
     {{-- CDN SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    {{-- CDN Font Awesome (Untuk Ikon Mata) --}}
+    {{-- CDN Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -29,7 +29,6 @@
             box-shadow: 0 0 5px rgba(220, 53, 69, 0.3);
         }
 
-        /* Style untuk Password Wrapper (Agar ikon mata bisa di dalam input) */
         .password-wrapper {
             position: relative;
         }
@@ -43,20 +42,13 @@
             color: #666;
             z-index: 10;
         }
-
-        .toggle-password:hover {
-            color: #333;
-        }
     </style>
 </head>
 
 <body>
-    <a href="{{ route('home') }}" class="btn-back">
-        ← Kembali ke Beranda
-    </a>
+    <a href="{{ route('home') }}" class="btn-back">← Kembali ke Beranda</a>
 
     <div class="login-container">
-
         <div class="login-left">
             <img src="{{ asset('images/DPPPA ver2.png') }}" alt="Logo DP3A">
             <h2>
@@ -81,17 +73,14 @@
                             class="form-control @error('nip') is-invalid @enderror"
                             required
                             autofocus
-                            placeholder="Masukkan NIP (Angka)"
-                            maxlength="20"
+                            placeholder="Masukkan NIP (18 Digit)"
+                            maxlength="18"
                             oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                             value="{{ old('nip') }}">
-
-                        @error('nip')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
+                        @error('nip') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- INPUT PASSWORD DENGAN IKON MATA --}}
+                    {{-- INPUT PASSWORD --}}
                     <div class="form-group">
                         <label>Password</label>
                         <div class="password-wrapper">
@@ -100,105 +89,113 @@
                                 name="password"
                                 class="form-control @error('password') is-invalid @enderror"
                                 required
-                                maxlength="20"
+                                maxlength="12"
                                 placeholder="Masukkan Password">
-
-                            {{-- Ikon Mata --}}
                             <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
                         </div>
-
-                        @error('password')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
+                        @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
 
                     <button type="submit" class="btn-login">Masuk</button>
                 </form>
-
             </div>
         </div>
-
     </div>
 
-    <footer>
-        © {{ date('Y') }} Tim PKL TI FT ULM
-    </footer>
+    <footer>© {{ date('Y') }} Tim PKL TI FT ULM</footer>
 
-    {{-- DATA HIDDEN UNTUK JS (ANTI MERAH VS CODE) --}}
+    {{-- DATA HIDDEN UNTUK JS --}}
     <div id="login-data"
         style="display: none;"
         data-success="{{ session('success') }}"
-        data-user-name="{{ Auth::user() ? Auth::user()->name : '' }}"
         data-has-error="{{ $errors->any() ? 'true' : 'false' }}"
         data-error-messages="{{ json_encode($errors->all()) }}">
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // === LOGIC 1: Toggle Password (Lihat/Tutup) ===
+            // TOGGLE PASSWORD
             const togglePassword = document.querySelector('#togglePassword');
             const password = document.querySelector('#passwordInput');
-
             togglePassword.addEventListener('click', function(e) {
-                // Toggle tipe input antara password dan text
                 const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
                 password.setAttribute('type', type);
-
-                // Toggle ikon mata (slash atau tidak)
                 this.classList.toggle('fa-eye-slash');
             });
 
-            // === LOGIC 2: SweetAlert ===
+            // SWEETALERT LOGIC
             var dataDiv = document.getElementById('login-data');
             var sessionSuccess = dataDiv.getAttribute('data-success');
             var hasError = dataDiv.getAttribute('data-has-error') === 'true';
             var rawMessages = dataDiv.getAttribute('data-error-messages');
             var errorMessages = rawMessages ? JSON.parse(rawMessages) : [];
 
-            // NOTIFIKASI SUKSES (Selamat Datang)
             if (sessionSuccess) {
-                // Ambil nama user (opsional, jika ingin spesifik)
-                // Pesan success biasanya sudah kita set di Controller
                 Swal.fire({
                     icon: 'success',
                     title: 'Login Berhasil!',
-                    text: sessionSuccess, // "Selamat Datang..."
+                    text: sessionSuccess,
                     showConfirmButton: false,
                     timer: 2000
                 });
             }
 
-            // NOTIFIKASI GAGAL (Spesifik: NIP, Password, atau Throttle)
             if (hasError) {
                 let title = 'Login Gagal';
                 let text = 'Terjadi kesalahan.';
                 let icon = 'error';
                 let confirmColor = '#d33';
-
-                // Gabungkan semua pesan error jadi satu string
                 let fullMessage = errorMessages.join(' ');
+                let timer = null; // Untuk timer countdown
 
-                // Cek jenis error
+                // Cek Time Out / Throttle
                 if (fullMessage.includes('seconds') || fullMessage.includes('detik')) {
-                    // Kasus: Terlalu Banyak Percobaan
                     title = 'Akses Dibatasi Sementara';
-                    text = fullMessage; // Tampilkan pesan detik/menit dari Laravel
                     icon = 'warning';
                     confirmColor = '#f39c12';
-                } else if (fullMessage.includes('NIP')) {
-                    // Kasus: NIP Salah
-                    text = 'NIP tidak ditemukan dalam sistem.';
-                } else if (fullMessage.includes('Password')) {
-                    // Kasus: Password Salah
-                    text = 'Password yang Anda masukkan salah.';
-                }
 
-                Swal.fire({
-                    icon: icon,
-                    title: title,
-                    text: text,
-                    confirmButtonColor: confirmColor,
-                });
+                    // Ambil angka detik dari pesan error (Misal: "Coba lagi dalam 180 detik")
+                    let secondsMatch = fullMessage.match(/\d+/);
+                    let secondsLeft = secondsMatch ? parseInt(secondsMatch[0]) : 180;
+
+                    Swal.fire({
+                        icon: icon,
+                        title: title,
+                        html: `Terlalu banyak percobaan gagal.<br>Silakan tunggu <b>${secondsLeft}</b> detik.`,
+                        confirmButtonColor: confirmColor,
+                        allowOutsideClick: false,
+                        showConfirmButton: false, // Hilangkan tombol agar user menunggu
+                        didOpen: () => {
+                            // LOGIKA AGAR ANGKA BERGERAK MUNDUR
+                            timer = setInterval(() => {
+                                secondsLeft--;
+                                Swal.getHtmlContainer().querySelector('b').textContent = secondsLeft;
+                                if (secondsLeft <= 0) {
+                                    clearInterval(timer);
+                                    Swal.close(); // Tutup popup otomatis jika waktu habis
+                                }
+                            }, 1000);
+                        },
+                        willClose: () => {
+                            clearInterval(timer);
+                        }
+                    });
+
+                } else {
+                    // Error Biasa (NIP/Pass Salah)
+                    if (fullMessage.includes('NIP')) {
+                        text = 'NIP tidak ditemukan (Pastikan 18 Digit).';
+                    } else if (fullMessage.includes('Password')) {
+                        text = 'Password salah';
+                    }
+
+                    Swal.fire({
+                        icon: icon,
+                        title: title,
+                        text: text,
+                        confirmButtonColor: confirmColor,
+                    });
+                }
             }
         });
     </script>
