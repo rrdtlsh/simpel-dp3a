@@ -24,32 +24,38 @@ class LoginRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+    // Di bagian rules()
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'nip' => [
+                'required',
+                'numeric',          // Hanya angka
+                'digits_between:1,20', // Batas panjang 1-20 digit
+                'regex:/^\S*$/',    // Tidak boleh ada spasi
+            ],
+            'password' => [
+                'required',
+                'string',
+                'max:20',           // Batasi password max 20 karakter
+            ],
         ];
     }
 
-    /**
-     * Attempt to authenticate the request's credentials.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        // Coba login
+        if (! Auth::attempt($this->only('nip', 'password'), $this->boolean('remember'))) {
+            RateLimiter::hit($this->throttleKey()); // Hitung kegagalan
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'nip' => 'NIP atau password salah.', // Pesan error generik (Security Best Practice)
             ]);
         }
 
-        RateLimiter::clear($this->throttleKey());
+        RateLimiter::clear($this->throttleKey()); // Reset jika berhasil
     }
 
     /**
@@ -59,16 +65,14 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) { // Batas 5 kali salah
             return;
         }
-
-        event(new Lockout($this));
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            'nip' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -80,6 +84,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }
