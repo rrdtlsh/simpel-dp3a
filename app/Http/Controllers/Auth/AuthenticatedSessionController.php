@@ -22,17 +22,27 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
-    {
-        $request->authenticate();
+public function store(LoginRequest $request): RedirectResponse
+{
+    $request->authenticate();
+    $request->session()->regenerate();
 
-        $request->session()->regenerate();
+    $user = Auth::user();
 
-        // Tambahkan pesan sesi 'success' untuk SweetAlert
-        return redirect()->intended(route('admin.dashboard', absolute: false))
-            ->with('success', 'Login Berhasil! Selamat Datang.');
+    // Sesuaikan dengan kata 'admin' dan 'user' yang ada di database Anda
+    if ($user->role === 'admin') {
+        return redirect()->route('admin.dashboard')
+        ->with('success', 'Login Berhasil! Selamat Datang.');
+    } 
+
+    // Jika di database tulisannya 'user', maka arahkan ke khp.permintaan
+    if ($user->role === 'user') {
+        return redirect()->route('khp.permintaan')
+        ->with('success', 'Login Berhasil! Selamat Datang.');
     }
 
+    return redirect('/'); 
+}
     /**
      * Destroy an authenticated session.
      */

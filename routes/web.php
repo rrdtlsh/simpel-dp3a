@@ -7,18 +7,28 @@ Route::get('/', function () {
     return view('start.home');
 })->name('home');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 });
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Ganti view('admin.dashboard') menjadi view('admin.dashboardadmin')
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboardadmin');
     })->name('admin.dashboard');
+
+    Route::get('/user/khp/permintaan', function () {
+        return view('user.khp.permintaan');
+    })->name('khp.permintaan');
+
+    Route::get('/user/khp/unggah', function () {
+        return view('user.khp.unggah');
+    })->name('khp.unggah');
+});
+
+Route::get('/force-logout', function () {
+    Auth::logout();
+    session()->flush();
+    return "Berhasil Logout! Silakan coba akses /login lagi.";
 });
 
 require __DIR__ . '/auth.php';
