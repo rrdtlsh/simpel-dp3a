@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | SIMPEL DP3A</title>
 
-    {{-- CSS Login Custom (Sudah mencakup semua style) --}}
+    {{-- CSS Login Custom --}}
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">
 
     {{-- CDN SweetAlert2 --}}
@@ -92,7 +92,7 @@
         data-error-messages="{{ json_encode($errors->all()) }}">
     </div>
 
-    {{-- SCRIPT LOGIC (Tidak Berubah) --}}
+    {{-- SCRIPT LOGIC --}}
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // 1. TOGGLE PASSWORD
@@ -113,6 +113,7 @@
             var rawMessages = dataDiv.getAttribute('data-error-messages');
             var errorMessages = rawMessages ? JSON.parse(rawMessages) : [];
 
+            // ALERT LOGIN BERHASIL
             if (sessionSuccess) {
                 Swal.fire({
                     icon: 'success',
@@ -123,20 +124,24 @@
                 });
             }
 
+            // ALERT ERROR
             if (hasError) {
                 let title = 'Login Gagal';
-                let text = 'Terjadi kesalahan.';
+                let text = 'Periksa kembali data Anda.';
                 let icon = 'error';
                 let confirmColor = '#d33';
+
+                // Gabungkan semua pesan error jadi satu string huruf kecil
                 let fullMessage = errorMessages.join(' ').toLowerCase();
                 let timerInterval;
 
-                // LOGIKA TIME OUT
+                // --- KASUS 1: COUNTDOWN / LIMIT LOGIN (60 DETIK) ---
                 if (fullMessage.includes('seconds') || fullMessage.includes('detik')) {
                     title = 'Akses Dibatasi Sementara';
                     icon = 'warning';
                     confirmColor = '#f39c12';
 
+                    // Ambil angka detik dari pesan (misal "60")
                     let secondsMatch = fullMessage.match(/\d+/);
                     let secondsLeft = secondsMatch ? parseInt(secondsMatch[0]) : 60;
 
@@ -148,14 +153,14 @@
                         allowOutsideClick: false,
                         showConfirmButton: false,
                         didOpen: () => {
+                            const b = Swal.getHtmlContainer().querySelector('#countdown');
                             timerInterval = setInterval(() => {
                                 secondsLeft--;
-                                const b = Swal.getHtmlContainer().querySelector('#countdown');
                                 if (b) b.textContent = secondsLeft;
                                 if (secondsLeft <= 0) {
                                     clearInterval(timerInterval);
                                     Swal.close();
-                                    location.reload();
+                                    location.reload(); // Refresh halaman saat waktu habis
                                 }
                             }, 1000);
                         },
@@ -163,20 +168,26 @@
                             clearInterval(timerInterval);
                         }
                     });
-                    return;
+                    return; // Stop eksekusi agar tidak muncul alert lain
                 }
 
-                // LOGIKA ERROR TEXT
-                if (fullMessage.includes('nip tidak ditemukan')) {
-                    text = 'NIP tidak ditemukan.';
-                } else if (fullMessage.includes('password yang anda masukkan salah') || fullMessage.includes('password yang dimasukkan salah')) {
-                    text = 'Password yang dimasukkan salah.';
-                } else if (fullMessage.includes('nama dan password yang dimasukkan salah')) {
-                    text = 'Nama dan Password yang dimasukkan salah.';
-                } else if (fullMessage.includes('wajib diisi')) {
+                // --- KASUS 2: DETEKSI PESAN ERROR SPESIFIK ---
+
+                // Cek Validasi (Jika NIP & Password Kosong atau Salah Format)
+                if (fullMessage.includes('nip wajib diisi') && fullMessage.includes('password wajib diisi')) {
                     text = 'NIP dan Password wajib diisi.';
-                } else {
-                    text = 'Nama dan Password yang dimasukkan salah.';
+                }
+                // Jika NIP Tidak Ditemukan (User Salah)
+                else if (fullMessage.includes('nip tidak ditemukan')) {
+                    text = 'NIP tidak ditemukan.';
+                }
+                // Jika Password Salah
+                else if (fullMessage.includes('password yang anda masukkan salah')) {
+                    text = 'Password yang dimasukkan salah.';
+                }
+                // Fallback untuk kasus lain
+                else {
+                    text = 'NIP atau Password salah.';
                 }
 
                 Swal.fire({

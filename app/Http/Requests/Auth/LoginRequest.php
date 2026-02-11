@@ -23,7 +23,6 @@ class LoginRequest extends FormRequest
                 'required',
                 'numeric',
                 'digits:18',
-                'regex:/^\S*$/',
             ],
             'password' => [
                 'required',
@@ -37,10 +36,10 @@ class LoginRequest extends FormRequest
     {
         return [
             'nip.required' => 'NIP wajib diisi.',
-            'password.required' => 'Password wajib diisi.',
+            'nip.numeric' => 'Format NIP harus angka.',
             'nip.digits' => 'NIP harus 18 digit.',
-            'nip.numeric' => 'Nama dan Password yang dimasukkan salah.',
-            'nip.regex' => 'Nama dan Password yang dimasukkan salah.',
+            'password.required' => 'Password wajib diisi.',
+            'password.max' => 'Password maksimal 12 karakter.',
         ];
     }
 
@@ -48,45 +47,66 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // Cek apakah NIP ada di database dulu (untuk pesan error spesifik)
-        $user = \App\Models\User::where('nip', $this->input('nip'))->first();
+        $nip = $this->input('nip');
+        $password = $this->input('password');
 
+        $user = \App\Models\User::where('nip', $nip)->first();
+
+        // NIP SALAH
         if (! $user) {
-            // Jika NIP tidak ditemukan, hitung sebagai percobaan gagal
             RateLimiter::hit($this->throttleKey(), 60);
 
             throw ValidationException::withMessages([
-                'nip' => 'NIP tidak ditemukan.', // Pesan khusus NIP salah
+                'nip' => 'NIP tidak ditemukan.',
             ]);
         }
 
-        if (! Auth::attempt($this->only('nip', 'password'), $this->boolean('remember'))) {
-            // Jika NIP ada tapi password salah
+        // PASSWORD SALAH
+        if (! Auth::attempt(['nip' => $nip, 'password' => $password])) {
             RateLimiter::hit($this->throttleKey(), 60);
 
             throw ValidationException::withMessages([
-                'password' => 'Password yang Anda masukkan salah.', // Pesan khusus Password salah
+                'password' => 'Password yang Anda masukkan salah.',
             ]);
         }
 
+        // LOGIN BERHASIL
         RateLimiter::clear($this->throttleKey());
     }
 
+
     public function ensureIsNotRateLimited(): void
     {
-        // Ubah batas percobaan: 3 kali, delay 60 detik (1 menit)
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 3)) {
             return;
         }
 
-        $seconds = RateLimiter::availableIn($this->throttleKey());
+        // PAKSA hitung ulang ke 60 detik
+        RateLimiter::clear($this->throttleKey());
+        RateLimiter::hit($this->throttleKey(), 60);
 
         throw ValidationException::withMessages([
-            'nip' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'nip' => 'Terlalu banyak percobaan login. Silakan coba lagi dalam 60 detik.',
         ]);
+    }
+
+
+    // FUNGSI KHUSUS UNTUK MEMASTIKAN COUNTDOWN 60 DETIK PENUH
+    protected function incrementLoginAttempts()
+    {
+        $key = $this->throttleKey();
+
+        // Cek apakah ini akan menjadi kegagalan ke-3 (karena index dimulai dari 0, attempts >= 2 berarti ini yang ke-3)
+        if (RateLimiter::attempts($key) >= 2) {
+            // Reset dulu agar waktunya mulai dari 60 detik bersih sekarang
+            RateLimiter::clear($key);
+            // Isi manual 2 hit
+            RateLimiter::hit($key, 60);
+            RateLimiter::hit($key, 60);
+            // Hit ke-3 (yang mengunci) akan dilakukan di baris bawah
+        }
+
+        RateLimiter::hit($key, 60);
     }
 
     public function throttleKey(): string

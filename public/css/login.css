@@ -7,7 +7,6 @@
     --abu: #f5f7fa;
     --text: #2c2c2c;
     --merah-error: #dc3545;
-    /* Tambahan variabel warna merah */
 }
 
 * {
@@ -25,39 +24,29 @@ body {
     justify-content: center;
 }
 
-/* ===== CONTAINER UTAMA (DIPERBESAR) ===== */
 .login-container {
-    /* Lebar diperbesar dari 900px ke 1000px */
     width: 1000px;
     max-width: 95%;
-    /* Tinggi diperbesar dari 500px ke 600px */
     height: 600px;
     background: var(--putih);
     display: flex;
     border-radius: 12px;
-    /* Radius sedikit diperhalus */
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-    /* Shadow dipertebal sedikit */
     overflow: hidden;
 }
 
-/* ===== KIRI ===== */
 .login-left {
     width: 45%;
-    /* Tetap 45% */
     padding: 50px;
-    /* Padding ditambah */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
     background-color: #fff;
-    /* Pastikan background putih bersih */
 }
 
 .login-left img {
-    /* Gambar logo diperbesar sedikit agar proporsional */
     width: 280px;
     margin-bottom: 30px;
 }
@@ -65,17 +54,14 @@ body {
 .login-left h2 {
     margin: 0;
     font-size: 18px;
-    /* Font size judul dinas diperbesar */
     line-height: 1.6;
     font-weight: 700;
     color: var(--hitam);
     letter-spacing: 0.5px;
 }
 
-/* ===== KANAN ===== */
 .login-right {
     width: 55%;
-    /* Tetap 55% */
     background: var(--abu);
     display: flex;
     align-items: center;
@@ -83,13 +69,10 @@ body {
 }
 
 .login-box {
-    /* Lebar box form diperbesar */
     width: 85%;
     max-width: 420px;
-    /* Max width ditambah dari 360px */
     background: var(--putih);
     padding: 45px;
-    /* Padding dalam box diperbesar */
     border-radius: 10px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
 }
@@ -100,18 +83,15 @@ body {
     color: var(--biru);
     letter-spacing: 1.5px;
     font-size: 24px;
-    /* Judul SIMPEL DP3A diperbesar */
     font-weight: 700;
 }
 
 .form-group {
     margin-bottom: 25px;
-    /* Jarak antar input diperlebar */
 }
 
 .form-group label {
     font-size: 15px;
-    /* Label font diperbesar */
     color: var(--text);
     display: block;
     margin-bottom: 8px;
@@ -121,7 +101,6 @@ body {
 .form-group input {
     width: 100%;
     padding: 12px 15px;
-    /* Padding input diperbesar agar lebih lega */
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 15px;
@@ -134,7 +113,6 @@ body {
     box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
 }
 
-/* ===== TAMBAHAN STYLE VALIDASI & PASSWORD ===== */
 .text-danger {
     color: var(--merah-error);
     font-size: 0.85em;
@@ -168,11 +146,9 @@ body {
     color: var(--text);
 }
 
-/* ===== TOMBOL ===== */
 .btn-login {
     width: 100%;
     padding: 14px;
-    /* Tombol lebih tebal */
     background: linear-gradient(135deg, var(--biru), var(--biru-tua));
     border: none;
     border-radius: 6px;
@@ -190,7 +166,6 @@ body {
     box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3);
 }
 
-/* ===== BUTTON KEMBALI ===== */
 .btn-back {
     position: fixed;
     top: 25px;
@@ -217,17 +192,13 @@ body {
     box-shadow: 0 6px 16px rgba(30, 136, 229, 0.25);
 }
 
-/* ===== FOOTER ===== */
 footer {
     margin-top: 20px;
     font-size: 14px;
     color: #666;
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
-
-    /* Breakpoint disesuaikan */
     .login-container {
         width: 90%;
         height: auto;
@@ -246,14 +217,12 @@ footer {
     .login-right {
         padding: 20px;
         background: white;
-        /* Di mobile background disamakan */
     }
 
     .login-box {
         width: 100%;
         max-width: 100%;
         box-shadow: none;
-        /* Hilangkan shadow box di mobile agar clean */
         padding: 20px;
     }
 }
