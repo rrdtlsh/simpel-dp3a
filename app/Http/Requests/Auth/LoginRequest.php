@@ -23,6 +23,7 @@ class LoginRequest extends FormRequest
                 'required',
                 'numeric',
                 'digits:18',
+                'regex:/^\S*$/',
             ],
             'password' => [
                 'required',
@@ -73,7 +74,6 @@ class LoginRequest extends FormRequest
         // LOGIN BERHASIL
         RateLimiter::clear($this->throttleKey());
     }
-
 
     public function ensureIsNotRateLimited(): void
     {
