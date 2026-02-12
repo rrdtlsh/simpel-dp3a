@@ -1,5 +1,5 @@
 :root{
-    --biru-header:#c0edff;
+    --biru-header:#ffffff;
     --biru-utama:#067fb2;
     --kuning:#fbc02d;
     --merah:#E74A3B;
@@ -218,3 +218,35 @@ table th{
         height:100%;
     }
 }
+
+/* =========================
+   NOTIFICATION BELL
+========================= */
+
+.notif-wrapper{
+    position:relative;
+    display:flex;
+    align-items:center;
+}
+
+.btn-bell{
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    position:relative;
+    transition:all .2s ease;
+}
+
+.btn-bell img{
+    width:18px !important;
+    height:18px !important;
+    object-fit:contain;
+}
+
+
+

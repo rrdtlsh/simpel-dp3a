@@ -23,6 +23,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/user/khp/unggah', function () {
         return view('user.khp.unggah');
     })->name('khp.unggah');
+
+    Route::get('/user/khp/pug', function () {
+        return view('user.khp.pug');
+    })->name('khp.pug');
 });
 
 Route::get('/force-logout', function () {

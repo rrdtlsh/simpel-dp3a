@@ -1,49 +1,17 @@
-@extends('layouts.admin') {{-- pakai layout yg sama dengan admin --}}
+@extends('layouts.khp')
 
 @section('title', 'Permintaan Dokumen | Bidang KHP')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/user/permintaan_khp.css') }}">
+<link rel="stylesheet" href="{{ asset('css/permintaan_khp.css') }}">
 @endpush
 
 @section('content')
 
-<div class="header">
-    <div class="header-left">
-        <div class="hamburger" id="hamburger">☰</div>
-        <img src="{{ asset('images/DPPPA ver2.png') }}">
-    </div>
-
-    <div class="header-right">
-        <div class="user-info">
-            <div class="user-icon">
-                <img src="{{ asset('images/accicon.png') }}">
-            </div>
-            <span>Bidang KHP</span>
-        </div>
-
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button class="btn-logout">Logout</button>
-        </form>
-    </div>
-</div>
-
-<div class="wrapper">
-
-<div class="sidebar" id="sidebar">
-    <ul>
-        <li class="active">Permintaan Dokumen</li>
-        <li><a href="{{ route('khp.unggah') }}" style="text-decoration:none; color:inherit;">Unggah Dokumen</a></li>
-        <li>Pertanyaan Evaluasi PUG</li>
-    </ul>
-</div>
-
-<div class="content">
-
 <div class="section-header">
-    <h2>Permintaan Dokumen Masuk</h2>
+    <h2>Permintaan Masuk</h2>
 </div>
+
 
 <!-- ================= TABLE ================= -->
 <div class="table-box">
@@ -52,36 +20,81 @@
 <tr>
 <th>No</th>
 <th>Nama Dokumen</th>
-<th>Tanggal Permintaan</th>
+<th>Bidang</th>
+<th>Tanggal</th>
+<th>Status</th>
 <th>Aksi</th>
 </tr>
 </thead>
+
 <tbody>
-    <tr>
-        <td>1</td>
-        <td>Laporan Kegiatan KHP 2025</td>
-        <td>20/01/2026</td>
-        <td>
-            <div class="action-btn">
-                <a class="btn-delete" data-id="1" title="Hapus">
-                    <img src="{{ asset('images/delete.png') }}">
-                </a>
-            </div>
-        </td>
-    </tr>
-    <tr>
-        <td>2</td>
-        <td>Data Program Pemberdayaan</td>
-        <td>19/01/2026</td>
-        <td>
-            <div class="action-btn">
-                <a class="btn-delete" data-id="2" title="Hapus">
-                    <img src="{{ asset('images/delete.png') }}">
-                </a>
-            </div>
-        </td>
-    </tr>
+
+<tbody>
+
+@php
+    $dataPermintaan = [
+        [
+            'nama' => 'Dokumen RPJMD 2026',
+            'bidang' => 'Kualitas Hidup Perempuan',
+            'tanggal' => '2026-02-12',
+            'status' => 'Masuk'
+        ],
+        [
+            'nama' => 'Laporan Evaluasi PUG',
+            'bidang' => 'Perlindungan Perempuan',
+            'tanggal' => '2026-02-11',
+            'status' => 'Menunggu'
+        ],
+        [
+            'nama' => 'Data Gender Kabupaten',
+            'bidang' => 'Pemenuhan Hak Anak',
+            'tanggal' => '2026-02-10',
+            'status' => 'Masuk'
+        ]
+    ];
+@endphp
+
+<!-- ===== CARD STATISTIK ===== -->
+<div class="card-container">
+    <div class="card">
+        <h4>Permintaan Masuk</h4>
+    </div>
+
+    <div class="card">
+        <h4>Total Permintaan</h4>
+    </div>
+</div>
+
+@forelse($dataPermintaan as $no => $row)
+<tr>
+<td>{{ $no + 1 }}</td>
+<td>{{ $row['nama'] }}</td>
+<td>{{ $row['bidang'] }}</td>
+<td>{{ $row['tanggal'] }}</td>
+<td class="{{ $row['status'] == 'Masuk' ? 'status-masuk' : 'status-menunggu' }}">
+    {{ $row['status'] }}
+</td>
+<td>
+<div class="action-btn">
+    <button class="btn-see">
+        <img src="{{ asset('images/eye.png') }}" alt="See">
+    </button>
+
+    <button class="btn-delete">
+        <img src="{{ asset('images/delete.png') }}" alt="Delete">
+    </button>
+</div>
+</td>
+</tr>
+
+@empty
+<tr>
+<td colspan="6" style="text-align:center;">Belum ada data permintaan</td>
+</tr>
+@endforelse
+
 </tbody>
+
 </table>
 </div>
 
@@ -91,5 +104,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/user/permintaan_khp.js') }}"></script>
+<script src="{{ asset('js/permintaan_khp.js') }}"></script>
 @endpush

@@ -3,22 +3,71 @@ document.addEventListener("DOMContentLoaded", function () {
     const sidebar = document.getElementById("sidebar");
     const hamburger = document.getElementById("hamburger");
 
+    const modalTambah = document.getElementById("modal");
+    const modalEdit   = document.getElementById("modalEdit");
+
+    const btnTambah   = document.getElementById("btnTambah");
+
+    const editNama    = document.getElementById("editNama");
+    const editBidang  = document.getElementById("editBidang");
+    const editTanggal = document.getElementById("editTanggal");
+
+    // ===== SIDEBAR =====
     hamburger?.addEventListener("click", () => {
         sidebar.classList.toggle("hide");
     });
 
-    // ===== HAPUS PERMINTAAN (SIMULASI) =====
-    document.addEventListener("click", function (e) {
-        const btnDelete = e.target.closest(".btn-delete");
-
-        if (btnDelete) {
-            e.preventDefault();
-
-            if (confirm("Yakin ingin menghapus permintaan ini?")) {
-                btnDelete.closest("tr").remove();
-                alert("Permintaan berhasil dihapus (simulasi)");
-            }
-        }
+    // ===== TAMBAH =====
+    btnTambah?.addEventListener("click", () => {
+        modalTambah.style.display = "block";
     });
 
+    // ===== 🔥 EVENT GLOBAL (KUNCI UTAMA) =====
+    document.addEventListener("click", function (e) {
+
+        // ===== EDIT =====
+        const btnEdit = e.target.closest(".btn-edit");
+        if (btnEdit) {
+            e.preventDefault();
+
+            editNama.value    = btnEdit.dataset.nama;
+            editBidang.value  = btnEdit.dataset.bidang;
+            editTanggal.value = btnEdit.dataset.tanggal;
+
+            modalEdit.style.display = "block";
+            return;
+        }
+
+        // ===== CLOSE TAMBAH =====
+        if (e.target.id === "closeModal") {
+            modalTambah.style.display = "none";
+        }
+
+        // ===== CLOSE EDIT =====
+        if (e.target.id === "closeEdit") {
+            modalEdit.style.display = "none";
+        }
+
+        // ===== CLICK OUTSIDE =====
+        if (e.target === modalTambah) modalTambah.style.display = "none";
+        if (e.target === modalEdit) modalEdit.style.display = "none";
+
+        document.addEventListener("DOMContentLoaded", function () {
+    const hamburger = document.getElementById("hamburger");
+    const sidebar = document.getElementById("sidebar");
+    const menuItems = document.querySelectorAll("#menu li");
+
+    hamburger.addEventListener("click", function () {
+        sidebar.classList.toggle("hide");
+    });
+
+    menuItems.forEach(item => {
+        item.addEventListener("click", () => {
+            menuItems.forEach(i => i.classList.remove("active"));
+            item.classList.add("active");
+        });
+    });
+});
+
+    });
 });

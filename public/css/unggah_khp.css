@@ -1,8 +1,7 @@
 :root{
-    --biru-header:#c0edff;
+    --biru-header:#ffffff;
     --biru-utama:#067fb2;
-    --biru-muda:#4da3ff;
-    --hijau:#2D8659;
+    --kuning:#fbc02d;
     --merah:#E74A3B;
     --putih:#ffffff;
     --abu-bg:#f4f6f8;
@@ -40,6 +39,7 @@ body{
 .hamburger{
     font-size:22px;
     cursor:pointer;
+    user-select:none;
 }
 
 .header-left img{
@@ -153,10 +153,11 @@ body{
     padding:24px;
 }
 
+/* ===== HEADER KONTEN ===== */
 .section-header{
     display:flex;
-    justify-content:space-between;
     align-items:center;
+    justify-content:space-between;
     margin-bottom:14px;
 }
 
@@ -183,7 +184,7 @@ table{
     border-collapse:collapse;
 }
 
-table th, table td{
+table th,table td{
     padding:12px;
     border-bottom:1px solid var(--abu-border);
     font-size:14px;
@@ -194,86 +195,149 @@ table th{
     background:#f9fafb;
 }
 
-/* ===== AKSI (Sama dengan Verifikasi Admin) ===== */
+/* ===== STATUS ===== */
+.status-masuk{
+    color:#008000;
+    font-weight:600;
+}
+
+.status-menunggu{
+    color:#ff9900;
+    font-weight:600;
+}
+
+/* ===== AKSI ===== */
+/* Update atau pastikan bagian ini di permintaan_khp.css Anda */
+
+/* =======================================
+   ===== BUTTON AKSI MODERN STYLE ======
+======================================= */
+
+/* =======================================
+   ===== BUTTON AKSI MODERN STYLE ======
+======================================= */
+
+/* ===============================
+   BUTTON ICON STYLE CLEAN
+================================ */
+
 .action-btn{
     display:flex;
     justify-content:center;
-    gap:8px;
+    gap:10px;
 }
 
-.action-btn a{
-    width:32px;
-    height:32px;
+/* BASE BUTTON */
+.action-btn button{
     display:flex;
     align-items:center;
     justify-content:center;
-    border-radius:4px;
+    gap:6px;
+
+    padding:8px 14px;
+    border:none;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:600;
     cursor:pointer;
+    transition:all .2s ease;
 }
 
-/* Menyesuaikan warna tombol dengan file verifikasi_admin */
-.btn-view{ background:var(--biru-muda); } /* Tombol Eye */
-.btn-edit{ background:var(--hijau); }     /* Tombol Yes/Edit */
-.btn-delete{ background:var(--merah); }   /* Tombol No/Delete */
-
-.action-btn img{
+/* ICON */
+.action-btn button img{
     width:16px;
     height:16px;
-    filter:brightness(0) invert(1);
+    filter:brightness(0) invert(1); /* icon jadi putih */
+    pointer-events:none;
 }
 
-/* ===== MODAL (Sesuai gaya verifikasi_admin) ===== */
+/* ===== BUTTON SEE (BIRU) ===== */
+.btn-see{
+    background:#067fb2;
+    color:white;
+}
+
+.btn-see:hover{
+    background:#056a95;
+}
+
+/* ===== BUTTON EDIT (KUNING) ===== */
+.btn-edit{
+    background:#fbc02d;
+    color:white;
+}
+
+.btn-edit:hover{
+    background:#e0aa27;
+}
+
+/* ===== BUTTON DELETE (MERAH) ===== */
+.btn-delete{
+    background:#E74A3B;
+    color:white;
+}
+
+.btn-delete:hover{
+    background:#c0392b;
+}
+
+
+
+/* ===== MODAL ===== */
 .modal{
     display:none;
     position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
     background:rgba(0,0,0,0.4);
     z-index:9999;
 }
 
 .modal-content{
-    background:var(--putih);
+    background:white;
+    width:420px;
     padding:20px;
     border-radius:8px;
     position:absolute;
-    top:50%; left:50%;
+    top:50%;
+    left:50%;
     transform:translate(-50%,-50%);
-    width:400px;
 }
 
 .modal-header{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:15px;
-    position:relative;
+    margin-bottom:12px;
 }
 
-.close-modal{
-    font-size:22px;
-    cursor:pointer;
-}
-
-.form-unggah{
+.modal-content form{
     display:flex;
     flex-direction:column;
-    gap:12px;
+    gap:10px;
 }
 
-.form-unggah input, .form-unggah select{
-    padding:10px;
+.modal-content input,
+.modal-content select{
+    padding:8px;
     border:1px solid var(--abu-border);
     border-radius:4px;
-    width: 100%;
 }
 
-.btn-simpan{
+.modal-content button{
+    margin-top:12px;
     background:var(--biru-utama);
     color:white;
     border:none;
     padding:10px;
     border-radius:4px;
     cursor:pointer;
-    font-weight:600;
 }
+
+#closeModal{
+    cursor:pointer;
+    font-weight:bold;
+}
+
