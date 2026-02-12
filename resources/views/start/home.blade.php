@@ -30,12 +30,26 @@
         <div class="dropdown">
             <span class="nav-item">Bidang Organisasi <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:5px;"></i></span>
             <div class="dropdown-content">
+                {{-- Link Kosong (Sesuai Permintaan) --}}
                 <a href="#">Sekretariat</a>
                 <a href="#">Perencanaan</a>
-                <a href="#">Kualitas Hidup Perempuan</a>
-                <a href="#">Pemenuhan Hak Anak</a>
-                <a href="#">Pelindungan Perempuan</a>
-                <a href="#">Perlindungan Khusus Anak</a>
+
+                {{-- Link Website Eksternal --}}
+                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Kualitas%20Hidup%20Perempuan" target="_blank">
+                    Kualitas Hidup Perempuan
+                </a>
+
+                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Pemenuhan%20Hak%20Anak" target="_blank">
+                    Pemenuhan Hak Anak
+                </a>
+
+                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Perlindungan%20Perempuan" target="_blank">
+                    Perlindungan Perempuan
+                </a>
+
+                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Perlindungan%20Khusus%20Anak" target="_blank">
+                    Perlindungan Khusus Anak
+                </a>
             </div>
         </div>
 
@@ -130,8 +144,8 @@
                 </div>
                 <div class="card-body">
                     <div class="card-date"><i class="fa-regular fa-calendar"></i> 15 Mei 2026</div>
-                    <h4 class="card-title">Sosialisasi Pencegahan Kekerasan Anak</h4>
-                    <p class="card-text">Dokumentasi kegiatan sosialisasi di Kelurahan Sungai Miai.</p>
+                    <h4 class="card-title">Layanan Penjangkauan melalui Konseling Psikologis PraNikah</h4>
+                    <p class="card-text">Dokumentasi kegiatan sosialisasi di KUA Banjarmasin Barat</p>
                 </div>
             </div>
         </div>
@@ -204,7 +218,11 @@
                 </p>
 
                 <p class="jam-ops">
-                    <i class="fa-regular fa-clock"></i> Senin - Jumat: 08.00 - 16.00 WITA
+                    <i class="fa-regular fa-clock"></i>
+                    <span>
+                        Senin - Kamis: 08.00 - 16.30 WITA<br>
+                        Jumat : 07.30 - 11.00 WITA
+                    </span>
                 </p>
 
                 <br>
