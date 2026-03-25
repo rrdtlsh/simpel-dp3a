@@ -15,87 +15,48 @@
 
 <!-- ================= TABLE ================= -->
 <div class="table-box">
-<table>
-<thead>
-<tr>
-<th>No</th>
-<th>Nama Dokumen</th>
-<th>Bidang</th>
-<th>Tanggal</th>
-<th>Status</th>
-<th>Aksi</th>
-</tr>
-</thead>
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Nama Dokumen</th>
+                <th>Bidang</th>
+                <th>Tanggal</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
 
-<tbody>
+        <tbody>
+            @forelse($pengajuans as $index => $p)
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $p->judul }}</td>
+                <td>{{ $p->bidang->nama ?? '-' }}</td>
+                <td>{{ $p->created_at->format('Y-m-d') }}</td>
+                <td>
+                    @if($p->status == 'open')
+                    <span style="color: orange;">Menunggu</span>
+                    @else
+                    <span style="color: green;">Selesai</span>
+                    @endif
+                </td>
+                <td>
+                    <form action="{{ route('pengajuan.upload', $p->id) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <input type="file" name="file" required>
+                        <button type="submit">Upload</button>
+                    </form>
+                </td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="6" style="text-align:center;">Tidak ada data</td>
+            </tr>
+            @endforelse
+        </tbody>
 
-<tbody>
-
-@php
-    $dataPermintaan = [
-        [
-            'nama' => 'Dokumen RPJMD 2026',
-            'bidang' => 'Kualitas Hidup Perempuan',
-            'tanggal' => '2026-02-12',
-            'status' => 'Masuk'
-        ],
-        [
-            'nama' => 'Laporan Evaluasi PUG',
-            'bidang' => 'Perlindungan Perempuan',
-            'tanggal' => '2026-02-11',
-            'status' => 'Menunggu'
-        ],
-        [
-            'nama' => 'Data Gender Kabupaten',
-            'bidang' => 'Pemenuhan Hak Anak',
-            'tanggal' => '2026-02-10',
-            'status' => 'Masuk'
-        ]
-    ];
-@endphp
-
-<!-- ===== CARD STATISTIK ===== -->
-<div class="card-container">
-    <div class="card">
-        <h4>Permintaan Masuk</h4>
-    </div>
-
-    <div class="card">
-        <h4>Total Permintaan</h4>
-    </div>
-</div>
-
-@forelse($dataPermintaan as $no => $row)
-<tr>
-<td>{{ $no + 1 }}</td>
-<td>{{ $row['nama'] }}</td>
-<td>{{ $row['bidang'] }}</td>
-<td>{{ $row['tanggal'] }}</td>
-<td class="{{ $row['status'] == 'Masuk' ? 'status-masuk' : 'status-menunggu' }}">
-    {{ $row['status'] }}
-</td>
-<td>
-<div class="action-btn">
-    <button class="btn-see">
-        <img src="{{ asset('images/eye.png') }}" alt="See">
-    </button>
-
-    <button class="btn-delete">
-        <img src="{{ asset('images/delete.png') }}" alt="Delete">
-    </button>
-</div>
-</td>
-</tr>
-
-@empty
-<tr>
-<td colspan="6" style="text-align:center;">Belum ada data permintaan</td>
-</tr>
-@endforelse
-
-</tbody>
-
-</table>
+    </table>
 </div>
 
 </div>

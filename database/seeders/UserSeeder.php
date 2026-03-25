@@ -13,6 +13,7 @@ class UserSeeder extends Seeder
         // 1. Admin Super: Sub Bagian Perencanaan
         User::create([
             'name' => 'Sub Bagian Perencanaan',
+            'email' => 'admin@gmail.com',
             'nip' => '197810162003122008', // NIP Contoh Admin
             'role' => 'admin',
             'password' => Hash::make('123456'),
@@ -21,6 +22,7 @@ class UserSeeder extends Seeder
         // 2. Bidang Kualitas Hidup Perempuan
         User::create([
             'name' => 'Bidang Kualitas Hidup Perempuan',
+            'email' => 'khp@gmail.com',
             'nip' => '196909071999032003', // NIP Contoh User 1
             'role' => 'user',
             'password' => Hash::make('123456'),
@@ -29,6 +31,7 @@ class UserSeeder extends Seeder
         // 3. Bidang Pemenuhan Hak Anak
         User::create([
             'name' => 'Bidang Pemenuhan Hak Anak',
+            'email' => 'pha@gmail.com',
             'nip' => '197512122006041026',
             'role' => 'user',
             'password' => Hash::make('123456'),
@@ -37,6 +40,7 @@ class UserSeeder extends Seeder
         // 4. Bidang Perlindungan Perempuan
         User::create([
             'name' => 'Bidang Perlindungan Perempuan',
+            'email' => 'pp@gmail.com',
             'nip' => '198007282006042026',
             'role' => 'user',
             'password' => Hash::make('123456'),
@@ -45,6 +49,7 @@ class UserSeeder extends Seeder
         // 5. Bidang Perlindungan Khusus Anak
         User::create([
             'name' => 'Bidang Perlindungan Khusus Anak',
+            'email' => 'pka@gmail.com',
             'nip' => '198201112009031004',
             'role' => 'user',
             'password' => Hash::make('123456'),
