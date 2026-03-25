@@ -16,6 +16,10 @@ class Pengajuan extends Model
         'created_by'
     ];
 
+    protected $casts = [
+        'due_date' => 'datetime',
+    ];
+
     // Relasi ke Bidang
     public function bidang()
     {
@@ -43,12 +47,10 @@ class Pengajuan extends Model
             return $query;
         }
 
-        // Kalau admin → lihat semua
         if ($user->role === 'admin') {
             return $query;
         }
 
-        // Kalau user → filter berdasarkan bidang
         return $query->where('bidang_id', $user->bidang_id);
     }
 }

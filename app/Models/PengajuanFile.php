@@ -2,16 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PengajuanFile extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'pengajuan_id',
         'user_id',
         'file_path',
         'status',
         'admin_notes'
+    ];
+
+    protected $casts = [
+        'files' => 'array',
     ];
 
     public function pengajuan()
@@ -22,18 +29,5 @@ class PengajuanFile extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function store(Request $request)
-    {
-        Pengajuan::create([
-            'judul' => $request->judul,
-            'deskripsi' => $request->deskripsi,
-            'bidang_id' => $request->bidang_id,
-            'due_date' => $request->due_date,
-            'created_by' => auth()->id()
-        ]);
-
-        return redirect()->back()->with('success', 'Pengajuan dibuat');
     }
 }

@@ -9,59 +9,72 @@ Route::get('/', function () {
     return view('start.home');
 })->name('home');
 
+// ==========================================
+// SEMUA RUTE YANG BUTUH LOGIN (AUTH)
+// ==========================================
 Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 
-    // ADMIN
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboardadmin');
-    })->name('admin.dashboard');
+    Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
 
-    // ADMIN: Permintaan Dokumen (LIST + MODAL)
-    Route::middleware('isAdmin')->group(function () {
-        Route::get('/admin/pengajuan', [PengajuanController::class, 'adminIndex'])
-            ->name('admin.pengajuan');
+    // ==========================================
+    // 🧑‍💼 ROUTES ADMIN
+    // ==========================================
+    Route::middleware('isAdmin')->prefix('admin')->group(function () {
 
-        Route::post('/admin/pengajuan/store', [PengajuanController::class, 'store'])
-            ->name('admin.pengajuan.store');
-    });
+        // Dashboard Utama
+        Route::get('/dashboard', function () {
+            return view('admin.dashboardadmin');
+        })->name('admin.dashboard');
 
-    // ADMIN: Konten SPA-like (tanpa pindah halaman)
-    Route::get('/admin/content/permintaan', [PengajuanController::class, 'adminContent'])
-        ->middleware(['auth', 'isAdmin']);
+        // CRUD Pengajuan (Permintaan Dokumen)
+        Route::get('/pengajuan', [PengajuanController::class, 'adminIndex'])->name('admin.pengajuan');
+        Route::post('/pengajuan/store', [PengajuanController::class, 'store'])->name('admin.pengajuan.store');
+        Route::put('/pengajuan/{id}', [PengajuanController::class, 'update'])->name('admin.pengajuan.update');
+        Route::delete('/pengajuan/{id}', [PengajuanController::class, 'destroy'])->name('admin.pengajuan.destroy');
 
-    // USER
-    Route::get('/user/khp/permintaan', [PengajuanController::class, 'index'])
-        ->name('khp.permintaan');
+        // Review / Verifikasi Dokumen
+        Route::post('/pengajuan/file/{id}/review', [PengajuanController::class, 'review'])->name('admin.pengajuan.review');
+        Route::get('/export/pdf', [PengajuanController::class, 'exportPdf'])->name('admin.export.pdf');
+        Route::get('/export/excel', [PengajuanController::class, 'exportExcel'])->name('admin.export.excel');
 
-    Route::get('/user/khp/unggah', function () {
-        return view('user.khp.unggah');
-    })->name('khp.unggah');
+        // --- KONTEN SPA (Single Page Application) ---
+        Route::prefix('content')->group(function () {
+            Route::get('/permintaan', [PengajuanController::class, 'adminContent']);
+            Route::get('/verifikasi', [PengajuanController::class, 'verifikasiContent']);
+            Route::get('/dokumen-masuk', [PengajuanController::class, 'dokumenMasukContent']);
 
-    Route::get('/user/khp/pug', function () {
-        return view('user.khp.pug');
-    })->name('khp.pug');
-
-    // PENGAJUAN
-    Route::get('/pengajuan', [PengajuanController::class, 'index'])
-        ->name('pengajuan.index');
-
-    Route::prefix('pengajuan')->group(function () {
-
-        // ✅ ADMIN ONLY
-        Route::middleware('isAdmin')->group(function () {
-            Route::post('/file/{id}/review', [PengajuanController::class, 'review'])
-                ->name('pengajuan.review');
+            Route::get('/evaluasi-pug', function () {
+                return '<div class="content"><h2>Pertanyaan Evaluasi PUG</h2><p>Halaman sedang dalam tahap pengembangan...</p></div>';
+            });
         });
-
-        // ✅ USER
-        Route::post('/{id}/upload', [PengajuanController::class, 'upload'])
-            ->name('pengajuan.upload');
     });
+
+
+    // ==========================================
+    // 👩‍💻 ROUTES USER (SKPD/Bidang)
+    // ==========================================
+
+    // Menu KHP
+    Route::prefix('user/khp')->group(function () {
+        Route::get('/permintaan', [PengajuanController::class, 'index'])->name('khp.permintaan');
+        Route::get('/unggah', function () {
+            return view('user.khp.unggah');
+        })->name('khp.unggah');
+        Route::get('/pug', function () {
+            return view('user.khp.pug');
+        })->name('khp.pug');
+    });
+
+    // Pengajuan & Upload (Global User)
+    Route::get('/pengajuan', [PengajuanController::class, 'index'])->name('pengajuan.index');
+    Route::post('/pengajuan/{id}/upload', [PengajuanController::class, 'upload'])->name('pengajuan.upload');
 });
 
-// LOGOUT (lebih aman)
+// ==========================================
+// LOGOUT (Lebih Aman dengan POST)
+// ==========================================
 Route::post('/logout', function () {
     Auth::logout();
     request()->session()->invalidate();

@@ -1,0 +1,56 @@
+/* =========================================
+   PUBLIC/CSS/DOKUMEN_MASUK.CSS
+========================================= */
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.header-actions select {
+    padding: 8px 10px;
+    border: 1px solid var(--abu-border, #ccc);
+    border-radius: 4px;
+    font-size: 13px;
+    outline: none;
+}
+
+.btn-export {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.btn-export:hover {
+    opacity: 0.9;
+}
+
+.btn-export.btn-pdf {
+    background: var(--merah, #E74A3B);
+}
+
+.btn-export.btn-excel {
+    background: var(--hijau, #2D8659);
+}
+
+/* Read-only Text Box di Modal */
+.readonly-box {
+    min-height: 100px;
+    background: #f4f6f8;
+    border: 1px solid var(--abu-border, #ccc);
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: #555;
+    overflow-y: auto;
+}

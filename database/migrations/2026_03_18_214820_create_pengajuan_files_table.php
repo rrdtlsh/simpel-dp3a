@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('pengajuan_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
-            $table->string('file_path');
+            $table->json('files');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->text('admin_notes')->nullable();
 

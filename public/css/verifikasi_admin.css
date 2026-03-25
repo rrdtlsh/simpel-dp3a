@@ -1,0 +1,177 @@
+/* =========================================
+   PUBLIC/CSS/VERIFIKASI_ADMIN.CSS
+========================================= */
+
+/* ===== STATUS ===== */
+.status-menunggu {
+    color: #fbc02d;
+    font-weight: 600;
+}
+
+.status-diterima {
+    color: #2D8659;
+    font-weight: 600;
+}
+
+.status-ditolak {
+    color: #E74A3B;
+    font-weight: 600;
+}
+
+/* ===== AKSI ===== */
+.action-btn {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.action-btn button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    color: white;
+    transition: transform 0.2s;
+}
+
+.action-btn button:hover {
+    transform: scale(1.05);
+}
+
+.btn-view {
+    background: var(--biru-muda, #4da3ff);
+}
+
+.btn-yes {
+    background: var(--hijau, #2D8659);
+}
+
+.btn-no {
+    background: var(--merah, #E74A3B);
+}
+
+/* ===== MODAL DETAIL VERIFIKASI ===== */
+.modal-verifikasi {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+}
+
+.modal-verifikasi.open {
+    display: block;
+}
+
+.modal-large {
+    width: 860px;
+    max-width: 92%;
+    background: var(--putih, #ffffff);
+    padding: 20px;
+    border-radius: 8px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 80vh;
+    overflow-y: auto;
+}
+
+.doc-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #f9fafb;
+    padding: 12px 14px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+/* ===== TOOLBAR EDITOR ===== */
+.editor-toolbar {
+    display: flex;
+    gap: 6px;
+    border: 1px solid var(--abu-border, #ccc);
+    padding: 6px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    background: #f9fafb;
+}
+
+.editor-toolbar button {
+    background: var(--putih, #fff);
+    border: 1px solid var(--abu-border, #ccc);
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.editor-toolbar button:hover {
+    background: #eaf6fc;
+}
+
+.editor-area {
+    min-height: 180px;
+    border: 1px solid var(--abu-border, #ccc);
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    outline: none;
+}
+
+.editor-area:focus {
+    border-color: var(--biru-utama, #067fb2);
+}
+
+.file-section {
+    margin-top: 8px;
+}
+
+.file-section h4 {
+    margin: 6px 0 8px;
+    font-size: 15px;
+}
+
+.file-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.file-section li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--abu-border, #ccc);
+    font-size: 14px;
+}
+
+.btn-save,
+.btn-send {
+    height: 36px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    color: white;
+}
+
+.btn-save {
+    background: var(--biru-utama, #067fb2);
+}
+
+.btn-send {
+    background: var(--hijau, #2D8659);
+}
