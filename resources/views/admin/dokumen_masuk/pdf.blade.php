@@ -41,7 +41,8 @@
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td>{{ $row->judul }}</td>
                     <td class="text-center">{{ $row->bidang->nama ?? '-' }}</td>
-                    <td class="text-center">{{ $row->created_at->format('Y') }}</td>
+                    <td class="text-center">{{ $row->tahun ?? '-' }}</td>
+                    
                     <td class="text-center">{{ $file ? $file->updated_at->format('d/m/Y H:i') : '-' }}</td>
                 </tr>
             @empty

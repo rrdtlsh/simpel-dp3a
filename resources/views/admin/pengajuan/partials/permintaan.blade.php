@@ -1,13 +1,23 @@
 <div class="content">
-    <div class="page-header">
-        <h2>Permintaan Dokumen</h2>
-        <button type="button" id="openModal" class="btn-primary">
-            + Tambah Permintaan
-        </button>
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <h2 style="margin: 0;">Permintaan Dokumen</h2>
+        
+        <div style="display: flex; gap: 12px; align-items: center;">
+            {{-- ✅ FITUR PENCARIAN ADMIN --}}
+            <div style="position: relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888;"></i>
+                <input type="text" id="searchPermintaanAdmin" oninput="searchTableAdmin()" placeholder="Cari nama dokumen..." 
+                style="padding: 8px 10px 8px 35px; border-radius: 6px; border: 1px solid #d1d5db; outline: none; width: 230px; font-family:'Poppins', sans-serif; font-size: 13px;">
+            </div>
+
+            <button type="button" id="openModal" class="btn-primary">
+                + Tambah Permintaan
+            </button>
+        </div>
     </div>
 
     <div class="table-box">
-        <table>
+        <table id="tabelPermintaanAdmin">
             <thead>
                 <tr>
                     <th class="text-left">No</th>
@@ -21,45 +31,53 @@
             </thead>
             <tbody>
                 @forelse ($pengajuans as $index => $p)
-                    <tr>
+                    @php
+                        $fileUpload = $p->files->first();
+                        $statusFile = $fileUpload ? strtolower(trim($fileUpload->status)) : 'belum_upload';
+                    @endphp
+                    <tr class="row-data" data-judul="{{ strtolower($p->judul) }}">
                         <td style="font-weight:700;">{{ $index + 1 }}</td>
                         <td>{{ $p->judul }}</td>
                         <td>{{ $p->bidang->nama ?? '-' }}</td>
-                        <td>{{ $p->created_at?->format('Y-m-d H:i') }}</td>
-                        <td>{{ $p->due_date ? \Carbon\Carbon::parse($p->due_date)->format('Y-m-d H:i') : '-' }}</td>
+                        <td>{{ $p->created_at?->format('d M Y') }}</td>
+                        <td style="color: #E74A3B; font-weight: 600;">{{ $p->due_date ? \Carbon\Carbon::parse($p->due_date)->format('d M Y H:i') : '-' }}</td>
+                        
                         <td>
-                            @if($p->status === 'open')
-                                <span class="status-wait">Menunggu</span>
+                            @if($statusFile === 'belum_upload')
+                                <span style="background: #f1f3f5; color: #555; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">Belum Diunggah</span>
+                            @elseif($statusFile === 'pending')
+                                <span style="background: #fff8e1; color: #fbc02d; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">Menunggu Review</span>
+                            @elseif($statusFile === 'rejected')
+                                <span style="background: #ffebee; color: #d32f2f; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">Revisi (Ditolak)</span>
                             @else
-                                <span class="status-ok">Selesai</span>
+                                <span style="background: #e8f5e9; color: #388e3c; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">Selesai</span>
                             @endif
                         </td>
+
                         <td class="text-center">
                             <div class="action-buttons">
-                                {{-- Tombol Lihat (Kirim data lewat atribut data-*) --}}
+                                {{-- Tombol Lihat --}}
                                 <button type="button" class="btn-icon btn-view action-view" title="Lihat Detail"
                                     data-judul="{{ $p->judul }}"
                                     data-bidang="{{ $p->bidang->nama ?? '-' }}"
                                     data-tgl="{{ $p->created_at?->format('d M Y H:i') }}"
                                     data-deadline="{{ $p->due_date ? \Carbon\Carbon::parse($p->due_date)->format('d M Y H:i') : '-' }}"
-                                    data-status="{{ $p->status === 'open' ? 'Menunggu' : 'Selesai' }}"
+                                    data-status="{{ $statusFile }}"
                                     data-deskripsi="{{ $p->deskripsi ?? 'Tidak ada deskripsi' }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
 
-                                {{-- Tombol Edit --}}
+                                {{-- Tombol Edit & Hapus (Tetap Sama) --}}
                                 <button type="button" class="btn-icon btn-edit action-edit" title="Edit Data"
                                     data-id="{{ $p->id }}"
                                     data-judul="{{ $p->judul }}"
                                     data-bidang_id="{{ $p->bidang_id }}"
+                                    data-tahun="{{ $p->tahun }}"
                                     data-deskripsi="{{ $p->deskripsi }}"
                                     data-due_date="{{ $p->due_date ? \Carbon\Carbon::parse($p->due_date)->format('Y-m-d\TH:i') : '' }}">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
-
-                                {{-- Tombol Hapus --}}
-                                <button type="button" class="btn-icon btn-delete action-delete" title="Hapus Data"
-                                    data-id="{{ $p->id }}">
+                                <button type="button" class="btn-icon btn-delete action-delete" title="Hapus Data" data-id="{{ $p->id }}">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
@@ -85,10 +103,10 @@
         <div class="modal-body">
             <form action="{{ route('admin.pengajuan.store') }}" method="POST" id="createPermintaanForm">
                 @csrf
-                <div class="modal-grid modal-grid-2">
+                <div class="modal-grid" style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px;">
                     <div class="modal-field">
                         <label>Nama Dokumen <span style="color:red">*</span></label>
-                        <input id="judul" class="modal-input validate-input" type="text" name="judul" data-type="judul" placeholder="Contoh: Laporan Evaluasi PUG 2025" />
+                        <input id="judul" class="modal-input validate-input" type="text" name="judul" data-type="judul" placeholder="Contoh: Laporan Evaluasi PUG" />
                         <div class="invalid-feedback" id="err_judul"><i class="fa-solid fa-circle-exclamation"></i> <span></span></div>
                     </div>
                     <div class="modal-field">
@@ -100,6 +118,17 @@
                             @endforeach
                         </select>
                         <div class="invalid-feedback" id="err_bidang_id"><i class="fa-solid fa-circle-exclamation"></i> <span></span></div>
+                    </div>
+                    <div class="modal-field">
+                        <label>Tahun <span style="color:red">*</span></label>
+                        <select id="tahun" class="modal-select validate-input" name="tahun" data-type="tahun">
+                            <option value="" disabled selected>Pilih Tahun</option>
+                            @php $currYear = date('Y'); @endphp
+                            @for($i = $currYear + 1; $i >= 2020; $i--)
+                                <option value="{{ $i }}" {{ $i == $currYear ? 'selected' : '' }}>{{ $i }}</option>
+                            @endfor
+                        </select>
+                        <div class="invalid-feedback" id="err_tahun"><i class="fa-solid fa-circle-exclamation"></i> <span></span></div>
                     </div>
                 </div>
                 <div class="modal-grid" style="margin-top:12px;">
@@ -135,7 +164,7 @@
             <form action="#" method="POST" id="editPermintaanForm">
                 @csrf
                 @method('PUT')
-                <div class="modal-grid modal-grid-2">
+                <div class="modal-grid" style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px;">
                     <div class="modal-field">
                         <label>Nama Dokumen <span style="color:red">*</span></label>
                         <input id="edit_judul" class="modal-input validate-input" type="text" name="judul" required minlength="5" maxlength="50" />
@@ -150,6 +179,16 @@
                             @endforeach
                         </select>
                         <div class="invalid-feedback" id="err_bidang_id"><i class="fa-solid fa-circle-exclamation"></i> <span></span></div>
+                    </div>
+                    <div class="modal-field">
+                        <label>Tahun <span style="color:red">*</span></label>
+                        <select id="edit_tahun" class="modal-select validate-input" name="tahun" data-type="tahun" required>
+                            @php $currYear = date('Y'); @endphp
+                            @for($i = $currYear + 1; $i >= 2020; $i--)
+                                <option value="{{ $i }}">{{ $i }}</option>
+                            @endfor
+                        </select>
+                        <div class="invalid-feedback" id="err_tahun"><i class="fa-solid fa-circle-exclamation"></i> <span></span></div>
                     </div>
                 </div>
                 <div class="modal-grid" style="margin-top:12px;">

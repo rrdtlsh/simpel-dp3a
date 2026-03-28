@@ -22,27 +22,25 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-public function store(LoginRequest $request): RedirectResponse
-{
-    $request->authenticate();
-    $request->session()->regenerate();
+    public function store(LoginRequest $request): RedirectResponse
+    {
+        $request->authenticate();
+        $request->session()->regenerate();
 
-    $user = Auth::user();
+        $user = Auth::user();
 
-    // Sesuaikan dengan kata 'admin' dan 'user' yang ada di database Anda
-    if ($user->role === 'admin') {
-        return redirect()->route('admin.dashboard')
-        ->with('success', 'Login Berhasil! Selamat Datang.');
-    } 
+        // 1. JIKA YANG LOGIN ADALAH ADMIN -> Lempar ke Dashboard Admin
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard')
+                ->with('success', 'Login Berhasil! Selamat Datang Admin.');
+        }
 
-    // Jika di database tulisannya 'user', maka arahkan ke khp.permintaan
-    if ($user->role === 'user') {
-        return redirect()->route('khp.permintaan')
-        ->with('success', 'Login Berhasil! Selamat Datang.');
+        // 2. JIKA YANG LOGIN ADALAH USER/BIDANG -> Lempar ke Daftar Permintaan
+        // (Tidak peduli apakah dia KHP, PHA, PP, atau PKA, semua masuk lewat 1 pintu ini)
+        return redirect()->route('user.dashboard')
+            ->with('success', 'Login Berhasil! Selamat Datang.');
     }
 
-    return redirect('/'); 
-}
     /**
      * Destroy an authenticated session.
      */
@@ -51,9 +49,8 @@ public function store(LoginRequest $request): RedirectResponse
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')->with('success', 'Anda telah berhasil logout dari sistem.');
     }
 }

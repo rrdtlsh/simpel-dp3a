@@ -11,6 +11,7 @@ class Pengajuan extends Model
         'judul',
         'deskripsi',
         'bidang_id',
+        'tahun',
         'due_date',
         'status',
         'created_by'

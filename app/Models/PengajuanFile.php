@@ -9,13 +9,7 @@ class PengajuanFile extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'pengajuan_id',
-        'user_id',
-        'file_path',
-        'status',
-        'admin_notes'
-    ];
+    protected $guarded = [];
 
     protected $casts = [
         'files' => 'array',

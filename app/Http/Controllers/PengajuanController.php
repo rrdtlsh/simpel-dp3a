@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Notifications\DokumenDiunggah;
+use App\Notifications\DokumenDiperiksa;
+use App\Notifications\PermintaanBaruNotification;
 use Illuminate\Support\Facades\Notification;
 use App\Models\Bidang;
 use App\Models\Pengajuan;
@@ -15,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Validator;
 
 class PengajuanController extends Controller
 {
@@ -30,7 +33,11 @@ class PengajuanController extends Controller
 
     public function adminContent()
     {
-        $pengajuans = Pengajuan::with('bidang')->latest()->get();
+        $pengajuans = Pengajuan::with([
+            'bidang',
+            'files' => fn($q) => $q->latest(), // ← INI yang hilang sebelumnya
+        ])->latest()->get();
+
         $bidangs = Bidang::whereIn('id', function ($query) {
             $query->select('bidang_id')
                 ->from('users')
@@ -84,6 +91,10 @@ class PengajuanController extends Controller
                 'required',
                 'exists:bidangs,id'
             ],
+            'tahun' => [
+                'required',
+                'digits:4',
+            ],
             'due_date' => [
                 'required',
                 'date',
@@ -113,96 +124,146 @@ class PengajuanController extends Controller
 
         $dueDate = Carbon::parse($validated['due_date']);
 
-        DB::transaction(function () use ($validated, $dueDate) {
-            Pengajuan::create([
-                'judul' => $validated['judul'],
-                'deskripsi' => $validated['deskripsi'] ?? null,
-                'bidang_id' => $validated['bidang_id'],
-                'due_date' => $dueDate,
-                'status' => 'open',
+        $pengajuan = DB::transaction(function () use ($validated, $dueDate) {
+            return Pengajuan::create([
+                'judul'      => $validated['judul'],
+                'deskripsi'  => $validated['deskripsi'] ?? null,
+                'bidang_id'  => $validated['bidang_id'],
+                'tahun'      => $validated['tahun'],
+                'due_date'   => $dueDate,
+                'status'     => 'open',
                 'created_by' => Auth::id(),
             ]);
         });
 
-        if ($request->wantsJson()) {
+        $bidang = Bidang::with('users')->find($request->bidang_id);
+        if ($bidang && $bidang->users->isNotEmpty()) {
+            Notification::send($bidang->users, new PermintaanBaruNotification($pengajuan));
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['message' => 'Permintaan dokumen berhasil dibuat']);
         }
 
         return redirect()->back()->with('success', 'Permintaan dokumen berhasil dibuat');
     }
 
-    // 👩‍💻 USER UPLOAD FILE (SUDAH DILENGKAPI PROTEKSI RACE CONDITION)
+    // 👩‍💻 USER: FUNGSI UPLOAD MULTI-FILE (CLAUDE AI + KOREKSI IDE)
     public function upload(Request $request, $id)
     {
-        // 1. Validasi File (Maksimal 5MB, format pdf/doc/xls)
-        $request->validate([
-            'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:5120',
+        // 1. VALIDASI SERVER-SIDE (Tanpa backslash agar IDE tidak protes)
+        $validator = Validator::make($request->all(), [
+            'files'          => ['nullable', 'array', 'max:5'],
+            'files.*'        => ['file', 'max:8192', 'mimes:pdf,doc,docx,xls,xlsx'],
+            'retained_files' => ['nullable', 'array'],
+            'user_notes'     => ['nullable', 'string', 'max:250'],
+        ], [
+            'files.required'   => 'Tidak ada file yang diunggah.',
+            'files.max'      => 'Maksimal 5 file baru dalam satu kali unggah.',
+            'files.*.max'    => 'Setiap file maksimal berukuran 8 MB.',
+            'files.*.mimes'  => 'Ekstensi file tidak diizinkan. Gunakan: PDF, DOC, DOCX, XLS, atau XLSX.',
+            'user_notes.max' => 'Pesan/Catatan terlalu panjang (Maksimal 250 karakter).',
         ]);
 
-        $userId = Auth::id();
-
-        // 2. Kunci unik Cache Lock (Pencegah user double-click)
-        $lockKey = "upload_pengajuan_{$id}_user_{$userId}";
-        $lock = Cache::lock($lockKey, 10); // Kunci selama 10 detik
-
-        if ($lock->get()) {
-            try {
-                // 3. Cek riwayat upload user pada pengajuan ini
-                $existingFile = PengajuanFile::where('pengajuan_id', $id)
-                    ->where('user_id', $userId)
-                    ->first();
-
-                // Jika sudah pernah upload & statusnya belum ditolak (berarti pending/approved)
-                if ($existingFile && $existingFile->status !== 'rejected') {
-                    return back()->with('error', 'Anda sudah mengunggah dokumen untuk permintaan ini.');
-                }
-
-                // 4. Proses simpan file fisik
-                $file = $request->file('file');
-                $filename = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
-                $path = $file->storeAs('pengajuan_files', $filename, 'public');
-
-                $pengajuan = Pengajuan::findOrFail($id); // Ambil data pengajuan untuk notif
-                $isReupload = false;
-
-                // 5. Simpan ke database
-                if ($existingFile && $existingFile->status === 'rejected') {
-                    // Jika file sebelumnya ditolak admin (Re-upload)
-                    if (Storage::disk('public')->exists($existingFile->file_path)) {
-                        Storage::disk('public')->delete($existingFile->file_path);
-                    }
-
-                    $existingFile->update([
-                        'file_path' => $path,
-                        'status' => 'pending',
-                        'admin_notes' => null
-                    ]);
-                    $isReupload = true; // Tandai sebagai reupload
-                } else {
-                    // Jika ini adalah upload pertama kali
-                    PengajuanFile::create([
-                        'pengajuan_id' => $id,
-                        'user_id' => $userId,
-                        'file_path' => $path,
-                        'status' => 'pending'
-                    ]);
-                }
-
-                // === 6. KIRIM NOTIFIKASI KE ADMIN ===
-                $admins = User::where('role', 'admin')->get(); // Ambil semua akun admin
-                $namaPengirim = Auth::user()->bidang ? Auth::user()->bidang->nama : Auth::user()->name; // Gunakan nama bidang jika ada
-
-                Notification::send($admins, new DokumenDiunggah($pengajuan, $namaPengirim, $isReupload));
-
-                return back()->with('success', 'Dokumen berhasil diunggah.');
-            } finally {
-                // Wajib dilepas agar nanti bisa akses fitur lagi
-                $lock->release();
-            }
-        } else {
-            // Jika user menekan tombol upload berulang kali dengan sangat cepat
-            return back()->with('error', 'Sistem sedang memproses unggahan Anda. Mohon tunggu sebentar.');
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal.',
+                'errors' => $validator->errors()->toArray(),
+            ], 422);
         }
+
+        $newFilesCount = $request->hasFile('files') ? count($request->file('files')) : 0;
+        $retainedCount = $request->has('retained_files') ? count($request->retained_files) : 0;
+        $totalFiles    = $newFilesCount + $retainedCount;
+
+        if ($totalFiles === 0) {
+            return response()->json(['success' => false, 'message' => 'Validasi gagal.', 'errors' => ['files' => ['Tidak ada file yang disimpan. Minimal 1 file.']]], 422);
+        }
+        if ($totalFiles > 5) {
+            return response()->json(['success' => false, 'message' => 'Validasi gagal.', 'errors' => ['files' => ['Total akumulasi file (lama + baru) maksimal 5 file.']]], 422);
+        }
+
+        $user = $request->user();
+
+        // 2. AMBIL DATA PENGAJUAN
+        $pengajuan = Pengajuan::where('id', $id)->where('bidang_id', $user->bidang_id)->firstOrFail();
+        $pengajuanFile = PengajuanFile::where('pengajuan_id', $pengajuan->id)->first();
+
+        // 3. PROTEKSI RE-UPLOAD
+        if ($pengajuanFile && !in_array($pengajuanFile->status, ['rejected', 'pending'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dokumen tidak dapat diubah karena sudah diverifikasi (Selesai).',
+            ], 403);
+        }
+
+        // 4. PROSES FILE LAMA (HAPUS YANG TIDAK DIPERTAHANKAN OLEH USER)
+        $existingFiles = $pengajuanFile ? ($pengajuanFile->files ?? []) : [];
+        $retainedPaths = $request->input('retained_files', []);
+        $finalExistingFiles = [];
+
+        foreach ($existingFiles as $oldFile) {
+            // Jika path lama ada di daftar yang dipertahankan User, simpan ke array final
+            if (isset($oldFile['path']) && in_array($oldFile['path'], $retainedPaths)) {
+                $finalExistingFiles[] = $oldFile;
+            } else {
+                // Jika tidak ada di daftar, berarti user menghapusnya di Modal UI. Hapus fisiknya!
+                if (isset($oldFile['path']) && Storage::disk('public')->exists($oldFile['path'])) {
+                    Storage::disk('public')->delete($oldFile['path']);
+                }
+            }
+        }
+
+        // 5. SIMPAN FILE BARU KE STORAGE
+        $uploadedFiles = [];
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $safeName     = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+                $uniqueName   = time() . '_' . uniqid() . '_' . $safeName;
+
+                $storedPath = $file->storeAs('pengajuan_files', $uniqueName, 'public');
+                if ($storedPath) {
+                    $uploadedFiles[] = [
+                        'path'          => $storedPath,
+                        'original_name' => $originalName,
+                        'size'          => $file->getSize(),
+                        'mime'          => $file->getMimeType(),
+                        'uploaded_at'   => now()->toDateTimeString(),
+                    ];
+                }
+            }
+        }
+
+        // 6. GABUNGKAN DATA & SIMPAN KE TABEL
+        $finalFilesToSave = array_merge($finalExistingFiles, $uploadedFiles);
+
+        PengajuanFile::updateOrCreate(
+            ['pengajuan_id' => $pengajuan->id],
+            [
+                'user_id' => $user->id,
+                'files' => $finalFilesToSave,
+                'status' => 'pending', // Reset ke pending setiap kali ada update/hapus file
+                'admin_notes' => null,
+                'user_notes'  => $request->input('user_notes'),
+            ]
+        );
+
+        // 7. KIRIM NOTIFIKASI KE ADMIN
+        $admins = User::where('role', 'admin')->get();
+        if ($admins->count() > 0) {
+            $namaPengirim = $user->bidang ? $user->bidang->nama : $user->name;
+            $isReupload = $pengajuanFile ? true : false;
+            Notification::send($admins, new DokumenDiunggah($pengajuan, $namaPengirim, $isReupload));
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => count($finalFilesToSave) . ' file berhasil disimpan.',
+            'total_files' => count($finalFilesToSave),
+            'files' => array_map(fn($f) => ['name' => $f['original_name'], 'size' => $f['size'] ?? 0], $finalFilesToSave),
+        ], 200);
     }
 
     // 🧑‍💼 ADMIN: PROSES REVIEW (TERIMA, TOLAK, ATAU SIMPAN CATATAN)
@@ -214,18 +275,13 @@ class PengajuanController extends Controller
                 'nullable',
                 'string',
                 function ($attr, $value, $fail) {
-                    $plainText = strip_tags($value); // Hapus tag HTML dari WYSIWYG untuk dihitung
-                    if (str_word_count($plainText) > 100) {
-                        $fail('Catatan revisi maksimal 100 kata.');
+                    // Bersihkan HTML tag dan spasi kosong untuk menghitung panjang asli teks
+                    $plainText = trim(strip_tags(html_entity_decode($value)));
+                    if (mb_strlen($plainText) > 500) {
+                        $fail('Catatan revisi terlalu panjang (maksimal 500 karakter teks).');
                     }
-                    if (strlen($plainText) > 1000) {
-                        $fail('Catatan revisi terlalu panjang (maks 1000 karakter).');
-                    }
-                },
-                'regex:/^[^<>{}^*^]*$/', // Mencegah script berbahaya
+                }
             ]
-        ], [
-            'admin_notes.regex' => 'Catatan mengandung karakter terlarang demi keamanan.',
         ]);
 
         // Temukan file berdasarkan ID Pengajuan (ambil yang paling baru)
@@ -240,6 +296,10 @@ class PengajuanController extends Controller
             'status' => $validated['status'],
             'admin_notes' => $validated['admin_notes']
         ]);
+
+        if ($file->user) {
+            Notification::send($file->user, new DokumenDiperiksa($file));
+        }
 
         return response()->json(['message' => 'Status dokumen berhasil diperbarui.']);
     }
@@ -321,22 +381,32 @@ class PengajuanController extends Controller
         return redirect()->back()->with('success', 'Permintaan dokumen berhasil diperbarui');
     }
 
-    // 🧑‍💼 ADMIN HAPUS PENGAJUAN
+    // 🧑‍💼 ADMIN HAPUS PENGAJUAN (DENGAN PEMBERSIHAN STORAGE)
     public function destroy($id)
     {
-        $pengajuan = Pengajuan::findOrFail($id);
+        $pengajuan = Pengajuan::with('files')->findOrFail($id);
+
+        foreach ($pengajuan->files as $pengajuanFile) {
+            if (!empty($pengajuanFile->files)) {
+                foreach ($pengajuanFile->files as $fileData) {
+                    if (isset($fileData['path']) && Storage::disk('public')->exists($fileData['path'])) {
+                        Storage::disk('public')->delete($fileData['path']);
+                    }
+                }
+            }
+        }
         $pengajuan->delete();
 
-        return response()->json(['message' => 'Permintaan berhasil dihapus']);
+        return response()->json(['message' => 'Permintaan dan file lampiran berhasil dihapus']);
     }
 
     // 🧑‍💼 ADMIN: TAMPILAN HALAMAN VERIFIKASI
     public function verifikasiContent()
     {
-        // Ambil data pengajuan beserta Bidang dan File terbarunya
-        $pengajuans = Pengajuan::with(['bidang', 'files' => function ($query) {
-            $query->latest(); // Ambil file yang paling baru di-upload
-        }])->latest()->get();
+        $pengajuans = Pengajuan::with([
+            'bidang',
+            'files' => fn($q) => $q->latest(),
+        ])->latest()->get();
 
         return view('admin.verifikasi.index', compact('pengajuans'));
     }
@@ -344,18 +414,19 @@ class PengajuanController extends Controller
     // 🧑‍💼 ADMIN: TAMPILAN ARSIP DOKUMEN MASUK (YANG SUDAH DI-APPROVE)
     public function dokumenMasukContent()
     {
-        // Ambil hanya pengajuan yang memiliki file dengan status 'approved'
         $pengajuans = Pengajuan::whereHas('files', function ($q) {
             $q->where('status', 'approved');
-        })->with(['bidang', 'files' => function ($q) {
-            $q->where('status', 'approved')->latest();
-        }])->latest()->get();
+        })->with([
+            'bidang',
+            'files' => fn($q) => $q->where('status', 'approved')->latest(),
+        ])->latest()->get();
 
-        // Ambil data untuk dropdown filter
         $bidangs = Bidang::all();
-        $tahuns = $pengajuans->pluck('created_at')->map(function ($date) {
-            return $date->format('Y');
-        })->unique()->sortDesc();
+        $tahuns = $pengajuans->pluck('tahun')
+            ->filter()
+            ->unique()
+            ->sortDesc()
+            ->values();
 
         return view('admin.dokumen_masuk.index', compact('pengajuans', 'bidangs', 'tahuns'));
     }
@@ -431,7 +502,7 @@ class PengajuanController extends Controller
                     $index + 1,
                     $row->judul,
                     $row->bidang->nama ?? '-',
-                    $row->created_at->format('Y'),
+                    $row->tahun ?? '-',
                     $fileData ? $fileData->updated_at->format('d M Y H:i') : '-'
                 ]);
             }
@@ -439,5 +510,133 @@ class PengajuanController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    // 👩‍💻 USER: HALAMAN DAFTAR PERMINTAAN DOKUMEN
+    public function userPermintaan()
+    {
+        $pengajuans = Pengajuan::forCurrentUserBidang()
+            ->with(['files' => fn($q) => $q->latest()])
+            ->latest()
+            ->get();
+
+        return view('user.permintaan.index', compact('pengajuans'));
+    }
+
+    // 👩‍💻 USER: HALAMAN ARSIP
+    public function userArsip()
+    {
+        $pengajuans = Pengajuan::forCurrentUserBidang()
+            ->whereHas('files', function ($q) {
+                $q->where('status', 'approved');
+            })
+            ->with(['files' => function ($q) {
+                $q->where('status', 'approved')->latest();
+            }])
+            ->latest()
+            ->get();
+
+        $tahuns = $pengajuans->pluck('tahun')->filter()->unique()->sortDesc()->values();
+
+        return view('user.arsip.index', compact('pengajuans', 'tahuns'));
+    }
+
+    // 👩‍💻 USER: EXPORT PDF ARSIP
+    public function exportPdfUser(Request $request)
+    {
+        $query = Pengajuan::forCurrentUserBidang()->whereHas('files', function ($q) {
+            $q->where('status', 'approved');
+        })->with(['bidang', 'files' => function ($q) {
+            $q->where('status', 'approved')->latest();
+        }]);
+
+        if ($request->tahun) {
+            $query->where('tahun', $request->tahun);
+        }
+
+        $pengajuans = $query->latest()->get();
+        // Menggunakan view yang sama dengan admin agar hemat memori (tampilannya sama saja)
+        $pdf = Pdf::loadView('admin.dokumen_masuk.pdf', compact('pengajuans'));
+        return $pdf->download('Arsip_Bidang_' . Auth::user()->bidang->nama . '_' . time() . '.pdf');
+    }
+
+    // 👩‍💻 USER: EXPORT EXCEL ARSIP
+    public function exportExcelUser(Request $request)
+    {
+        $query = Pengajuan::forCurrentUserBidang()->whereHas('files', function ($q) {
+            $q->where('status', 'approved');
+        })->with(['bidang', 'files' => function ($q) {
+            $q->where('status', 'approved')->latest();
+        }]);
+
+        if ($request->tahun) {
+            $query->where('tahun', $request->tahun);
+        }
+
+        $pengajuans = $query->latest()->get();
+        $fileName = 'Arsip_Bidang_' . Auth::user()->bidang->nama . '_' . time() . '.csv';
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $callback = function () use ($pengajuans) {
+            $file = fopen('php://output', 'w');
+            fputs($file, $bom = (chr(0xEF) . chr(0xBB) . chr(0xBF)));
+            fputcsv($file, ['No', 'Nama Dokumen', 'Bidang Tujuan', 'Tahun', 'Tanggal Diterima']);
+            foreach ($pengajuans as $index => $row) {
+                $fileData = $row->files->first();
+                fputcsv($file, [
+                    $index + 1,
+                    $row->judul,
+                    $row->bidang->nama ?? '-',
+                    $row->tahun ?? '-',
+                    $fileData ? $fileData->updated_at->format('d M Y H:i') : '-'
+                ]);
+            }
+            fclose($file);
+        };
+        return response()->stream($callback, 200, $headers);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // [TUGAS 2B] METHOD BARU — tambahkan ke PengajuanController.php
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    public function userDashboard()
+    {
+        // Ambil semua pengajuan untuk bidang user yang login
+        $pengajuans = Pengajuan::forCurrentUserBidang()
+            ->with(['files' => fn($q) => $q->latest()])
+            ->latest()
+            ->get();
+
+        // Hitung statistik berdasarkan status FILE (bukan status pengajuan)
+        $stats = [
+            'total'    => $pengajuans->count(),
+
+            // 'open' = pengajuan yang belum ada file sama sekali (belum diupload)
+            'open'     => $pengajuans->filter(fn($p) => $p->files->isEmpty())->count(),
+
+            // 'pending' = sudah upload, menunggu review admin
+            'pending'  => $pengajuans->filter(
+                fn($p) => $p->files->isNotEmpty() && $p->files->first()->status === 'pending'
+            )->count(),
+
+            // 'rejected' = ditolak admin, perlu revisi
+            'rejected' => $pengajuans->filter(
+                fn($p) => $p->files->isNotEmpty() && $p->files->first()->status === 'rejected'
+            )->count(),
+
+            // 'approved' = diterima admin
+            'approved' => $pengajuans->filter(
+                fn($p) => $p->files->isNotEmpty() && $p->files->first()->status === 'approved'
+            )->count(),
+        ];
+
+        return view('user.dashboarduser', compact('stats'));
     }
 }

@@ -47,6 +47,8 @@ class DokumenDiunggah extends Notification
             'icon' => $this->isReupload ? 'fa-file-pen' : 'fa-file-arrow-up',
             'color' => $this->isReupload ? '#fff3cd' : '#eaf6fc',
             'text_color' => $this->isReupload ? '#856404' : '#067fb2',
+
+            'page' => 'verifikasi',
         ];
     }
 }

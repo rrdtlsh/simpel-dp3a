@@ -55,7 +55,8 @@ class LoginRequest extends FormRequest
 
         // NIP SALAH
         if (! $user) {
-            RateLimiter::hit($this->throttleKey(), 60);
+            // Panggil fungsi khusus Anda di sini!
+            $this->incrementLoginAttempts();
 
             throw ValidationException::withMessages([
                 'nip' => 'NIP tidak ditemukan.',
@@ -64,7 +65,8 @@ class LoginRequest extends FormRequest
 
         // PASSWORD SALAH
         if (! Auth::attempt(['nip' => $nip, 'password' => $password])) {
-            RateLimiter::hit($this->throttleKey(), 60);
+            // Panggil fungsi khusus Anda di sini!
+            $this->incrementLoginAttempts();
 
             throw ValidationException::withMessages([
                 'password' => 'Password yang Anda masukkan salah.',
@@ -81,29 +83,23 @@ class LoginRequest extends FormRequest
             return;
         }
 
-        // PAKSA hitung ulang ke 60 detik
-        RateLimiter::clear($this->throttleKey());
-        RateLimiter::hit($this->throttleKey(), 60);
+        event(new Lockout($this));
 
+        // Teks 60 detik persis seperti keinginan Anda
         throw ValidationException::withMessages([
             'nip' => 'Terlalu banyak percobaan login. Silakan coba lagi dalam 60 detik.',
         ]);
     }
 
-
-    // FUNGSI KHUSUS UNTUK MEMASTIKAN COUNTDOWN 60 DETIK PENUH
+    // FUNGSI KHUSUS ANDA YANG SUDAH TERHUBUNG
     protected function incrementLoginAttempts()
     {
         $key = $this->throttleKey();
 
-        // Cek apakah ini akan menjadi kegagalan ke-3 (karena index dimulai dari 0, attempts >= 2 berarti ini yang ke-3)
         if (RateLimiter::attempts($key) >= 2) {
-            // Reset dulu agar waktunya mulai dari 60 detik bersih sekarang
             RateLimiter::clear($key);
-            // Isi manual 2 hit
             RateLimiter::hit($key, 60);
             RateLimiter::hit($key, 60);
-            // Hit ke-3 (yang mengunci) akan dilakukan di baris bawah
         }
 
         RateLimiter::hit($key, 60);

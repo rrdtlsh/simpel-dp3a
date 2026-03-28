@@ -113,14 +113,23 @@
             var rawMessages = dataDiv.getAttribute('data-error-messages');
             var errorMessages = rawMessages ? JSON.parse(rawMessages) : [];
 
-            // ALERT LOGIN BERHASIL
+            // ALERT LOGIN / LOGOUT BERHASIL (MENGGUNAKAN TOAST)
             if (sessionSuccess) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Berhasil!',
-                    text: sessionSuccess,
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
                     showConfirmButton: false,
-                    timer: 2000
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+
+                Toast.fire({
+                    icon: 'success',
+                    title: sessionSuccess
                 });
             }
 
