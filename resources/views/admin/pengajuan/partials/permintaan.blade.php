@@ -1,13 +1,12 @@
 <div class="content">
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+    <div class="page-header">
         <h2 style="margin: 0;">Permintaan Dokumen</h2>
         
-        <div style="display: flex; gap: 12px; align-items: center;">
+        <div class="header-actions">
             {{-- ✅ FITUR PENCARIAN ADMIN --}}
-            <div style="position: relative;">
-                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888;"></i>
-                <input type="text" id="searchPermintaanAdmin" oninput="searchTableAdmin()" placeholder="Cari nama dokumen..." 
-                style="padding: 8px 10px 8px 35px; border-radius: 6px; border: 1px solid #d1d5db; outline: none; width: 230px; font-family:'Poppins', sans-serif; font-size: 13px;">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchPermintaanAdmin" oninput="searchTableAdmin()" placeholder="Cari nama dokumen...">
             </div>
 
             <button type="button" id="openModal" class="btn-primary">
@@ -44,13 +43,13 @@
                         
                         <td>
                             @if($statusFile === 'belum_upload')
-                                <span style="background: #f1f3f5; color: #555; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">Belum Diunggah</span>
+                                <span class="status-badge belum">Belum Diunggah</span>
                             @elseif($statusFile === 'pending')
-                                <span style="background: #fff8e1; color: #fbc02d; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">Menunggu Review</span>
+                                <span class="status-badge pending">Menunggu Review</span>
                             @elseif($statusFile === 'rejected')
-                                <span style="background: #ffebee; color: #d32f2f; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">Revisi (Ditolak)</span>
+                                <span class="status-badge rejected">Revisi (Ditolak)</span>
                             @else
-                                <span style="background: #e8f5e9; color: #388e3c; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px;">Selesai</span>
+                                <span class="status-badge approved">Selesai</span>
                             @endif
                         </td>
 
@@ -67,7 +66,7 @@
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
 
-                                {{-- Tombol Edit & Hapus (Tetap Sama) --}}
+                                {{-- Tombol Edit --}}
                                 <button type="button" class="btn-icon btn-edit action-edit" title="Edit Data"
                                     data-id="{{ $p->id }}"
                                     data-judul="{{ $p->judul }}"
@@ -77,6 +76,8 @@
                                     data-due_date="{{ $p->due_date ? \Carbon\Carbon::parse($p->due_date)->format('Y-m-d\TH:i') : '' }}">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
+                                
+                                {{-- Tombol Hapus --}}
                                 <button type="button" class="btn-icon btn-delete action-delete" title="Hapus Data" data-id="{{ $p->id }}">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
@@ -160,7 +161,6 @@
             <button type="button" id="closeEditModal" class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-            {{-- Action URL akan diisi oleh JavaScript --}}
             <form action="#" method="POST" id="editPermintaanForm">
                 @csrf
                 @method('PUT')

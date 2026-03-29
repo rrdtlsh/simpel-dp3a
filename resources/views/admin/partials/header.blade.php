@@ -3,35 +3,41 @@
         <div class="hamburger" id="hamburger">☰</div>
         <img src="{{ asset('images/DPPPA ver2.png') }}" alt="Logo DP3A">
     </div>
+    
     <div class="header-right">
         @php $unreadNotifs = auth()->user()->unreadNotifications ?? collect(); @endphp
 
+        {{-- WIDGET NOTIFIKASI --}}
         <div class="notif-wrapper">
             <button class="btn-bell" id="notifButton">
-                <i class="fa-regular fa-bell" style="font-size:20px;"></i>
+                <i class="fa-regular fa-bell"></i>
                 @if($unreadNotifs->count() > 0)
                     <span class="notif-badge">{{ $unreadNotifs->count() }}</span>
                 @endif
             </button>
+            
             <div class="notif-dropdown" id="notifDropdown">
                 <div class="notif-header">
                     <span>Notifikasi</span>
                     @if($unreadNotifs->count() > 0)
-                        <a href="#" id="markAllRead" style="font-size:12px; font-weight:normal;">
+                        <a href="#" id="markAllRead" class="mark-all-read-btn">
                             Tandai semua dibaca
                         </a>
                     @endif
                 </div>
+                
                 <div class="notif-body">
                     @forelse($unreadNotifs as $notif)
                         <a href="#" class="notif-item unread"
                             data-notif-id="{{ $notif->id }}"
                             data-pengajuan-id="{{ $notif->data['pengajuan_id'] ?? '' }}"
                             onclick="handleNotifClick(event, this)">
-                            <div class="notif-icon"
-                                style="background:{{ $notif->data['color'] }}; color:{{ $notif->data['text_color'] }};">
+                            
+                            {{-- Warna dinamis dari database dibiarkan inline agar aman --}}
+                            <div class="notif-icon" style="background:{{ $notif->data['color'] }}; color:{{ $notif->data['text_color'] }};">
                                 <i class="fa-solid {{ $notif->data['icon'] }}"></i>
                             </div>
+                            
                             <div class="notif-text">
                                 <p>
                                     <b>{{ $notif->data['pengirim'] ?? '' }}</b>
@@ -42,49 +48,46 @@
                             </div>
                         </a>
                     @empty
-                        <div style="padding:20px; text-align:center; color:#888; font-size:13px;">
-                            <i class="fa-regular fa-bell-slash" style="font-size:24px; color:#ccc;"></i><br>
+                        <div class="notif-empty-state">
+                            <i class="fa-regular fa-bell-slash notif-empty-icon"></i><br>
                             Belum ada notifikasi baru.
                         </div>
                     @endforelse
                 </div>
+                
                 <div class="notif-footer">
                     <a href="#" onclick="handleLoadVerifikasi(event)">Lihat Halaman Verifikasi</a>
                 </div>
             </div>
         </div>
 
-        <div class="user-info-wrapper" style="position:relative; margin-left:15px;">
-            <div class="user-info" id="userDropdownBtn"
-                style="cursor:pointer; padding:5px 10px; border-radius:6px; display:flex; align-items:center; gap:8px;">
+        {{-- WIDGET PROFIL USER --}}
+        <div class="user-profile-wrapper">
+            <div class="user-profile-btn" id="userDropdownBtn">
                 <div class="user-icon">
-                    <img src="{{ asset('images/accicon.png') }}" alt="Akun" style="width:26px; height:26px;">
+                    <img src="{{ asset('images/accicon.png') }}" alt="Akun">
                 </div>
-                <span style="font-weight:600; font-size:14px; color:#2c2c2c;">
+                <span class="user-profile-name">
                     {{ Auth::user()->name ?? 'Admin' }}
                 </span>
-                <i class="fa-solid fa-chevron-down" style="font-size:10px; color:#555;"></i>
+                <i class="fa-solid fa-chevron-down user-profile-arrow"></i>
             </div>
-            <div class="profile-dropdown" id="profileDropdown"
-                style="display:none; position:absolute; right:0; top:110%; background:#fff;
-                       box-shadow:0 4px 15px rgba(0,0,0,.15); border-radius:8px; width:190px;
-                       z-index:1000; overflow:hidden; border:1px solid #e0e0e0;">
-                <a href="#" id="btnOpenUbahPassword"
-                    style="display:block; padding:12px 16px; color:#2c2c2c; text-decoration:none;
-                           border-bottom:1px solid #f0f0f0; font-size:14px;">
-                    <i class="fa-solid fa-key" style="margin-right:8px; color:#067fb2; width:16px;"></i>
+            
+            <div class="profile-dropdown-menu" id="profileDropdown" style="display:none;">
+                <a href="#" id="btnOpenUbahPassword" class="profile-dropdown-item">
+                    <i class="fa-solid fa-key" style="color:#067fb2;"></i>
                     Ubah Password
                 </a>
-                <form method="POST" action="{{ route('logout') }}" id="formLogout" style="margin:0;">
+                
+                <form method="POST" action="{{ route('logout') }}" id="formLogout" class="form-logout">
                     @csrf
-                    <button type="button" onclick="confirmLogout(event, this.form)"
-                        style="width:100%; text-align:left; background:none; border:none;
-                               padding:12px 16px; color:#E74A3B; cursor:pointer; font-weight:600; font-size:14px;">
-                        <i class="fa-solid fa-right-from-bracket" style="margin-right:8px; width:16px;"></i>
+                    <button type="button" onclick="confirmLogout(event, this.form)" class="profile-dropdown-item text-red">
+                        <i class="fa-solid fa-right-from-bracket"></i>
                         Logout
                     </button>
                 </form>
             </div>
         </div>
+        
     </div>
 </div>

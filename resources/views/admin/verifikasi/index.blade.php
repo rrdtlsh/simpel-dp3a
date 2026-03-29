@@ -1,12 +1,11 @@
 <div class="content">
-    <div class="section-header" style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-        <h2 style="margin: 0;">Verifikasi Dokumen Masuk</h2>
+    <div class="verif-header">
+        <h2>Verifikasi Dokumen Masuk</h2>
         
         {{-- ✅ FITUR PENCARIAN --}}
-        <div style="position: relative;">
-            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888;"></i>
-            <input type="text" id="searchVerifikasiAdmin" placeholder="Cari nama dokumen..." 
-                   style="padding: 8px 10px 8px 35px; border-radius: 6px; border: 1px solid #d1d5db; outline: none; width: 250px; font-family:'Poppins', sans-serif; font-size: 13px;">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchVerifikasiAdmin" placeholder="Cari nama dokumen...">
         </div>
     </div>
 
@@ -29,8 +28,6 @@
                         $status  = $file ? $file->status : 'belum_upload';
                         $catatan = $file ? ($file->admin_notes ?? '') : '';
 
-                        // Siapkan array file untuk di-embed sebagai JSON
-                        // Tidak perlu base64 — akan dimasukkan ke <script type="application/json">
                         $filesArray = collect($file?->files ?? [])
                             ->map(fn($f) => [
                                 'original_name' => $f['original_name'] ?? basename($f['path'] ?? 'File'),
@@ -40,13 +37,7 @@
                             ->toArray();
                     @endphp
 
-                {{--
-                    ✅ Embed JSON file list sebagai script tag — AMAN untuk semua karakter
-                    JS membaca: document.getElementById('files-verif-{{ $row->id }}').textContent
-                --}}
                 <script type="application/json" id="files-verif-{{ $row->id }}">@json($filesArray)</script>
-
-                {{-- ✅ TAHAP 1A: Simpan Catatan HTML Admin dengan sangat aman di sini --}}
                 <template id="admin-note-{{ $row->id }}">{!! $catatan !!}</template>
 
                 <tr class="row-data" data-judul="{{ strtolower($row->judul) }}">
@@ -62,15 +53,13 @@
                         @elseif($status === 'pending')
                             <span class="status-menunggu">Menunggu Review</span>
                         @else
-                            <span style="color:#888; font-weight:600;">Belum Ada File</span>
+                            <span class="table-status-empty">— Belum Ada File</span>
                         @endif
                     </td>
                     <td style="text-align:center;">
                         <div class="action-btn">
-                            {{-- Tombol Lihat — data-files DIHAPUS, diganti id="files-verif-{id}" di atas --}}
-                            <button
-                                type="button"
-                                class="btn-view action-verifikasi"
+                            {{-- Tombol Lihat --}}
+                            <button type="button" class="btn-view action-verifikasi {{ $status === 'belum_upload' ? 'btn-verif-disabled' : '' }}"
                                 data-id="{{ $row->id }}"
                                 data-nama="{{ $row->judul }}"
                                 data-bidang="{{ $row->bidang->nama ?? '-' }}"
@@ -79,42 +68,33 @@
                                 data-status="{{ $status }}"
                                 data-user-notes="{{ $file ? ($file->user_notes ?? '') : '' }}"
                                 title="Lihat & Beri Catatan"
-                                @if($status === 'belum_upload') disabled style="opacity:0.5;cursor:not-allowed;" @endif
-                            >
+                                @if($status === 'belum_upload') disabled @endif>
                                 <i class="fa-solid fa-eye"></i>
                             </button>
 
                             {{-- Tombol Terima --}}
-                            <button
-                                type="button"
-                                class="btn-yes action-approve"
+                            <button type="button" class="btn-yes action-approve {{ $status === 'belum_upload' ? 'btn-verif-disabled' : '' }}"
                                 data-id="{{ $row->id }}"
                                 data-nama="{{ $row->judul }}"
                                 title="Terima Dokumen"
-                                @if($status === 'belum_upload') disabled style="opacity:0.5;cursor:not-allowed;" @endif
-                            >
+                                @if($status === 'belum_upload') disabled @endif>
                                 <i class="fa-solid fa-check"></i>
                             </button>
 
                             {{-- Tombol Tolak --}}
-                            <button
-                                type="button"
-                                class="btn-no action-reject"
+                            <button type="button" class="btn-no action-reject {{ $status === 'belum_upload' ? 'btn-verif-disabled' : '' }}"
                                 data-id="{{ $row->id }}"
                                 data-nama="{{ $row->judul }}"
                                 title="Tolak Dokumen"
-                                @if($status === 'belum_upload') disabled style="opacity:0.5;cursor:not-allowed;" @endif
-                            >
+                                @if($status === 'belum_upload') disabled @endif>
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </div>
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="6" style="text-align:center; color:#888; padding:20px;">
-                        Belum ada pengajuan.
-                    </td>
+                <tr class="table-empty-row">
+                    <td colspan="6">Belum ada pengajuan.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -125,50 +105,50 @@
 {{-- Modal Detail Verifikasi --}}
 <div class="modal-verifikasi" id="detailModal">
     <div class="modal-content modal-large">
-        <div class="modal-header" style="position:relative; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:15px;">
-            <h3 style="margin:0;">Detail & Verifikasi Dokumen</h3>
-            <span class="close-modal" id="closeDetail"
-                style="position:absolute; right:0; top:-5px; font-size:24px; cursor:pointer;">&times;</span>
+        <div class="modal-verif-header">
+            <h3>Detail & Verifikasi Dokumen</h3>
+            <span class="modal-verif-close" id="closeDetail">&times;</span>
         </div>
+        
         <div class="doc-info">
             <div><strong>Nama Dokumen:</strong> <span id="dNama"></span></div>
             <div><strong>Bidang:</strong> <span id="dBidang"></span></div>
             <div><strong>Tanggal Diupload:</strong> <span id="dTanggalUpload"></span></div>
-            <div><strong>Deadline Target:</strong> <span id="dDeadline" style="color:#E74A3B"></span></div>
-            <div><strong>Status Saat Ini:</strong> <span id="dStatus" style="font-weight:bold;"></span></div>
+            <div><strong>Deadline Target:</strong> <span id="dDeadline"></span></div>
+            <div><strong>Status Saat Ini:</strong> <span id="dStatus"></span></div>
         </div>
-        <div id="dUserNotesContainer" style="display:none; margin-top:12px; padding:12px; background:#eff6ff; border-left:4px solid #3b82f6; border-radius:6px;">
-            <span style="color:#1d4ed8; font-size:13px; font-weight:bold;"><i class="fa-solid fa-envelope-open-text"></i> Pesan dari Bidang:</span>
-            <div id="dUserNotesText" style="margin-top:4px; font-size:13.5px; color:#1e3a8a; word-break: break-word; white-space: pre-wrap; max-height: 80px; overflow-y: auto;"></div>
+
+        <div id="dUserNotesContainer" class="user-notes-box" style="display:none;">
+            <span class="user-notes-title"><i class="fa-solid fa-envelope-open-text"></i> Pesan dari Bidang:</span>
+            <div id="dUserNotesText" class="user-notes-text"></div>
         </div>
-        <div style="margin-top:15px;">
-            <strong>Catatan Revisi / Penjelasan Admin:</strong>
-            <span style="color:red">*</span>
+
+        <div class="admin-notes-label">
+            Catatan Revisi / Penjelasan Admin: <span>*</span>
         </div>
+
         <div class="editor-toolbar" style="margin-top:5px;">
-            <button type="button" data-cmd="bold"      title="Bold"><i class="fa-solid fa-bold"></i></button>
-            <button type="button" data-cmd="italic"    title="Italic"><i class="fa-solid fa-italic"></i></button>
+            <button type="button" data-cmd="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+            <button type="button" data-cmd="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
             <button type="button" data-cmd="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
         </div>
-        <div id="editorDetail" class="editor-area validate-editor"
-            contenteditable="true" placeholder="Ketik catatan di sini..."></div>
-        <div id="adminNotesCounter" style="font-size: 11px; color: #6b7280; text-align: right; margin-top: 4px; font-weight: 500;">
-            0/500 karakter
-        </div>
-        <div class="invalid-feedback" id="err_editor"
-            style="display:none; color:#dc3545; font-size:11.5px; font-weight:600; margin-top:-8px; margin-bottom:12px;">
+        
+        <div id="editorDetail" class="editor-area validate-editor" contenteditable="true" placeholder="Ketik catatan di sini..."></div>
+        <div id="adminNotesCounter" class="admin-notes-counter">0/500 karakter</div>
+        
+        <div class="invalid-feedback" id="err_editor" style="display:none; color:#dc3545; font-size:11.5px; font-weight:600; margin-top:-8px; margin-bottom:12px;">
             <i class="fa-solid fa-circle-exclamation"></i> <span></span>
         </div>
+
         <div class="file-section">
             <h4>Lampiran Dokumen (Upload dari User)</h4>
             <ul id="lampiranList"></ul>
         </div>
-        <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+
+        <div class="modal-verif-footer">
             <input type="hidden" id="verifikasiPengajuanId">
             <button type="button" class="btn-save" id="btnSaveNotes">Simpan Catatan Saja</button>
-            <button type="button" class="btn-send" id="btnSendFeedback" style="background:var(--merah);">
-                Tolak &amp; Kirim Revisi
-            </button>
+            <button type="button" class="btn-send" id="btnSendFeedback" style="background:var(--merah);">Tolak &amp; Kirim Revisi</button>
         </div>
     </div>
 </div>

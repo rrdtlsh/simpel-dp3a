@@ -54,3 +54,110 @@
     color: #555;
     overflow-y: auto;
 }
+
+/* ==========================================================================
+   HALAMAN ARSIP (DOKUMEN MASUK)
+   ========================================================================== */
+
+/* Header Arsip */
+.arsip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.arsip-header h2 {
+    margin: 0;
+}
+
+/* Pencarian (Search Box) di Header Arsip */
+.search-box-arsip {
+    position: relative;
+}
+
+.search-box-arsip i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+.search-box-arsip input {
+    padding: 8px 10px 8px 35px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    width: 200px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    transition: border-color 0.2s;
+}
+
+.search-box-arsip input:focus {
+    border-color: var(--biru-utama, #067fb2);
+}
+
+/* Tabel Status & Tanggal */
+.arsip-tgl-terima {
+    color: #2D8659;
+    font-weight: 600;
+}
+
+.arsip-empty-row td {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+}
+
+/* ==========================================================================
+   MODAL DETAIL ARSIP
+   ========================================================================== */
+
+/* Catatan User (Pesan dari Bidang) */
+.arsip-user-notes-box {
+    margin-top: 12px;
+    display: none;
+}
+
+.arsip-user-notes-content {
+    margin-top: 6px;
+    padding: 10px 14px;
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #1e3a8a;
+    min-height: 36px;
+    word-break: break-word;
+    white-space: pre-wrap;
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+/* Catatan Admin */
+.arsip-admin-notes-box {
+    margin-top: 8px;
+}
+
+.arsip-admin-notes-content {
+    margin-top: 6px;
+    padding: 10px 14px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #374151;
+    min-height: 36px;
+    word-break: break-word;
+    white-space: pre-wrap;
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+.arsip-file-section {
+    margin-top: 16px;
+}

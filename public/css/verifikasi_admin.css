@@ -1,8 +1,49 @@
-/* =========================================
+/* ==========================================================================
    PUBLIC/CSS/VERIFIKASI_ADMIN.CSS
-========================================= */
+   ========================================================================== */
 
-/* ===== STATUS ===== */
+/* ===== HEADER & PENCARIAN ===== */
+.verif-header {
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.verif-header h2 {
+    margin: 0;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+.search-box input {
+    padding: 8px 10px 8px 35px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    width: 250px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    transition: border-color 0.2s;
+}
+
+.search-box input:focus {
+    border-color: var(--biru-utama, #067fb2);
+}
+
+/* ===== STATUS TABEL ===== */
 .status-menunggu {
     color: #fbc02d;
     font-weight: 600;
@@ -18,7 +59,18 @@
     font-weight: 600;
 }
 
-/* ===== AKSI ===== */
+.table-status-empty {
+    color: #888;
+    font-weight: 600;
+}
+
+.table-empty-row td {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+}
+
+/* ===== TOMBOL AKSI TABEL ===== */
 .action-btn {
     display: flex;
     justify-content: center;
@@ -38,7 +90,7 @@
     transition: transform 0.2s;
 }
 
-.action-btn button:hover {
+.action-btn button:hover:not(:disabled) {
     transform: scale(1.05);
 }
 
@@ -52,6 +104,11 @@
 
 .btn-no {
     background: var(--merah, #E74A3B);
+}
+
+.btn-verif-disabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
 }
 
 /* ===== MODAL DETAIL VERIFIKASI ===== */
@@ -84,6 +141,33 @@
     overflow-y: auto;
 }
 
+/* Header Modal */
+.modal-verif-header {
+    position: relative;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.modal-verif-header h3 {
+    margin: 0;
+}
+
+.modal-verif-close {
+    position: absolute;
+    right: 0;
+    top: -5px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #888;
+    transition: color 0.2s;
+}
+
+.modal-verif-close:hover {
+    color: #333;
+}
+
+/* Info Dokumen */
 .doc-info {
     display: flex;
     flex-direction: column;
@@ -95,7 +179,58 @@
     font-size: 14px;
 }
 
-/* ===== TOOLBAR EDITOR ===== */
+#dDeadline {
+    color: #E74A3B;
+    font-weight: bold;
+}
+
+#dStatus {
+    font-weight: bold;
+}
+
+/* Catatan User (Pesan dari Bidang) */
+.user-notes-box {
+    margin-top: 12px;
+    padding: 12px;
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    border-radius: 6px;
+}
+
+.user-notes-title {
+    color: #1d4ed8;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.user-notes-text {
+    margin-top: 4px;
+    font-size: 13.5px;
+    color: #1e3a8a;
+    word-break: break-word;
+    white-space: pre-wrap;
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+/* ===== TOOLBAR & EDITOR CATATAN ADMIN ===== */
+.admin-notes-label {
+    margin-top: 15px;
+    font-weight: 600;
+}
+
+.admin-notes-label span {
+    color: red;
+}
+
+.admin-notes-counter {
+    font-size: 11px;
+    color: #6b7280;
+    text-align: right;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
 .editor-toolbar {
     display: flex;
     gap: 6px;
@@ -133,6 +268,7 @@
     border-color: var(--biru-utama, #067fb2);
 }
 
+/* ===== LAMPIRAN FILE ===== */
 .file-section {
     margin-top: 8px;
 }
@@ -157,6 +293,14 @@
     font-size: 14px;
 }
 
+/* ===== FOOTER MODAL (TOMBOL SIMPAN/TOLAK) ===== */
+.modal-verif-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
 .btn-save,
 .btn-send {
     height: 36px;
@@ -173,5 +317,5 @@
 }
 
 .btn-send {
-    background: var(--hijau, #2D8659);
+    background: var(--merah, #E74A3B);
 }

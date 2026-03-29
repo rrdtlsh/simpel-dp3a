@@ -14,3 +14,18 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
+/* ==========================================================================
+   SPLASH SCREEN LOADER LOGIC
+   ========================================================================== */
+window.addEventListener('load', function () {
+    var loader = document.getElementById('loader');
+    if (loader) {
+        setTimeout(function () {
+            loader.style.opacity = '0';
+            setTimeout(function () {
+                loader.style.display = 'none';
+            }, 500);
+        }, 300);
+    }
+});
