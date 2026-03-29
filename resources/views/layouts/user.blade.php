@@ -162,8 +162,8 @@
             </ul>
         </div>
 
-        {{-- ✅ KONTEN UTAMA (Tambahkan id="main-content") --}}
-        <main class="content" id="main-content" style="flex:1; padding:24px; background:#f4f6f8; min-height:calc(100vh - 64px);">
+        {{-- ✅ KONTEN UTAMA (Tambahkan min-width: 0 agar grafik bisa mengecil) --}}
+        <main class="content" id="main-content" style="flex:1; padding:24px; background:#f4f6f8; min-height:calc(100vh - 64px); min-width: 0; overflow-x: hidden;">
             @yield('content')
         </main>
     </div>

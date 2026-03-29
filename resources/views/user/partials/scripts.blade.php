@@ -98,10 +98,27 @@ window.confirmLogout = function(e, form) {
 document.addEventListener('DOMContentLoaded', function () {
 
     // === SIDEBAR TOGGLE ===
+    // === 1. SIDEBAR TOGGLE (HAMBURGER) ===
     var hamburger = document.getElementById('hamburger');
     var sidebar   = document.getElementById('sidebar');
     if (hamburger && sidebar) {
-        hamburger.addEventListener('click', function() { sidebar.classList.toggle('hide'); });
+        hamburger.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            sidebar.classList.toggle('hide');
+            
+            // ✅ TRIK ANIMASI CHART SMOOTH:
+            // Memaksa browser melakukan 'resize' secara bertahap (frame by frame) 
+            // selama 300ms mengikuti kecepatan animasi sidebar!
+            let frame = 0;
+            let smoothResize = setInterval(function() {
+                window.dispatchEvent(new Event('resize'));
+                frame++;
+                if (frame >= 15) {
+                    clearInterval(smoothResize); // Hentikan setelah 300ms (15 frame x 20ms)
+                }
+            }, 20); 
+        });
     }
 
     // === PROFIL DROPDOWN ===

@@ -84,6 +84,8 @@ body {
 /* ===== LAYOUT ===== */
 .wrapper {
     display: flex;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 /* ===== SIDEBAR ===== */
@@ -149,6 +151,8 @@ body {
 .content {
     flex: 1;
     padding: 24px;
+    min-width: 0;
+    overflow-x: hidden;
 }
 
 .content h2 {
@@ -513,6 +517,18 @@ table th {
     display: flex;
     align-items: center;
     gap: 7px;
+}
+
+.dash-chart-card {
+    overflow: hidden !important;
+    min-width: 0 !important;
+}
+
+.apexcharts-canvas,
+.apexcharts-canvas svg,
+.apexcharts-foreignObject {
+    width: 100% !important;
+    transition: width 0.3s ease;
 }
 
 @keyframes pwSlideUp {
