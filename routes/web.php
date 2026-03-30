@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PengajuanController;
+use App\Http\Controllers\EvaluasiPugController; // ✅ TAMBAHKAN INI
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
@@ -16,26 +17,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
 
     // ── Notifikasi ──────────────────────────────────────────────────────────
-    // Tandai satu notifikasi sebagai dibaca
     Route::post('/notifications/{id}/read', function (Request $request, $id) {
-        /** @var \App\Models\User $user */
-        $user = $request->user(); // Lebih aman dan mudah dibaca oleh sistem/editor
-
+        $user = $request->user();
         $notif = $user->notifications()->find($id);
-        if ($notif) {
-            $notif->markAsRead();
-        }
-
+        if ($notif) $notif->markAsRead();
         return response()->json(['ok' => true]);
     })->name('notifications.read');
 
-    // Tandai semua notifikasi sebagai dibaca
     Route::post('/notifications/mark-all-read', function (Request $request) {
-        /** @var \App\Models\User $user */
-        $user = $request->user();
-
-        $user->unreadNotifications->markAsRead();
-
+        $request->user()->unreadNotifications->markAsRead();
         return response()->json(['ok' => true]);
     })->name('notifications.markAllRead');
 
@@ -55,13 +45,27 @@ Route::middleware('auth')->group(function () {
         Route::get('/export/pdf', [PengajuanController::class, 'exportPdf'])->name('admin.export.pdf');
         Route::get('/export/excel', [PengajuanController::class, 'exportExcel'])->name('admin.export.excel');
 
+        // ✅ ROUTING SPA CONTENT (Bagian Kanan Dashboard)
         Route::prefix('content')->group(function () {
             Route::get('/permintaan', [PengajuanController::class, 'adminContent']);
             Route::get('/verifikasi', [PengajuanController::class, 'verifikasiContent']);
             Route::get('/dokumen-masuk', [PengajuanController::class, 'dokumenMasukContent']);
-            Route::get('/evaluasi-pug', function () {
-                return '<div class="content"><h2>Pertanyaan Evaluasi PUG</h2><p>Sedang dalam pengembangan...</p></div>';
-            });
+            // ✅ TAMBAHAN UNTUK PUG (Pastikan Claude sudah membuat fungsi 'index' di controllernya)
+            Route::get('/evaluasi-pug', [EvaluasiPugController::class, 'index']);
+        });
+
+        // ✅ ROUTING AKSI EVALUASI PUG (Berdasarkan instruksi Claude)
+        Route::prefix('evaluasi-pug')->name('evaluasi-pug.')->group(function () {
+            Route::get('/pertanyaan/{id}', [EvaluasiPugController::class, 'show'])->name('show');
+            Route::put('/pertanyaan/{id}', [EvaluasiPugController::class, 'updatePertanyaan'])->name('pertanyaan.update');
+            Route::delete('/pertanyaan/{id}', [EvaluasiPugController::class, 'hapusPertanyaan'])->name('pertanyaan.destroy');
+            Route::post('/jawaban', [EvaluasiPugController::class, 'simpanJawaban'])->name('jawaban.simpan');
+            Route::post('/lampiran', [EvaluasiPugController::class, 'uploadLampiran'])->name('lampiran.upload');
+            Route::delete('/lampiran/{id}', [EvaluasiPugController::class, 'hapusLampiran'])->name('lampiran.hapus');
+            Route::post('/verifikasi', [EvaluasiPugController::class, 'verifikasi'])->name('verifikasi');
+            Route::post('/pertanyaan', [EvaluasiPugController::class, 'tambahPertanyaan'])->name('pertanyaan.tambah');
+            Route::get('/export/excel', [EvaluasiPugController::class, 'exportExcel'])->name('export.excel');
+            Route::get('/export/pdf', [EvaluasiPugController::class, 'exportPdf'])->name('export.pdf');
         });
     });
 

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{{ asset('css/verifikasi_admin.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('css/dokumen_masuk.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('css/modal_password.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('css/evaluasi_pug.css') }}">
 @endpush
 
 @section('content')
@@ -96,4 +97,5 @@
 
     {{-- 5. Panggil Logika Javascript --}}
     @include('admin.partials.scripts')
+    <script src="{{ asset('js/evaluasi_pug.js') }}"></script>
 @endpush

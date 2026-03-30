@@ -618,6 +618,7 @@ function loadPage(page, element) {
         + '<i class="fa-solid fa-spinner fa-spin fa-2x" style="color:#067fb2;"></i>'
         + '<p style="margin-top:12px;color:#6b7280;">Memuat data...</p></div>';
 
+    var basePage = page.split('?')[0];
     return fetch('/admin/content/' + page, { credentials: 'same-origin' })
         .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
         .then(function(html) {
@@ -625,6 +626,25 @@ function loadPage(page, element) {
             if      (page === 'permintaan')    initPermintaanPage();
             else if (page === 'verifikasi')    initVerifikasiPage();
             else if (page === 'dokumen-masuk') initDokumenMasukPage();
+            else if (page === 'evaluasi-pug')  {
+                if (typeof EvaluasiPUG !== 'undefined') {
+                    EvaluasiPUG.init({
+                        isAdmin: true,
+                        tahun  : new Date().getFullYear(),
+                        routes : {
+                            show       : '/admin/evaluasi-pug/pertanyaan/',
+                            simpan     : '/admin/evaluasi-pug/jawaban',
+                            uploadFile : '/admin/evaluasi-pug/lampiran',
+                            hapusFile  : '/admin/evaluasi-pug/lampiran/',
+                            verifikasi : '/admin/evaluasi-pug/verifikasi',
+                            tambah     : '/admin/evaluasi-pug/pertanyaan',
+                            exportExcel: '/admin/evaluasi-pug/export/excel',
+                            exportPdf  : '/admin/evaluasi-pug/export/pdf',
+                        },
+                        csrf: getCsrf()
+                    });
+                }
+            }
         })
         .catch(function(err) {
             console.error('[loadPage]', err);
@@ -770,27 +790,61 @@ document.addEventListener('DOMContentLoaded', function() {
     var lastPage = sessionStorage.getItem('adminLastPage');
  
     if (lastPage && lastPage !== 'dashboard') {
+        var basePage = lastPage.split('?')[0]; // Memisahkan query parameter jika ada
         var pageToMenuIndex = { 'permintaan': 1, 'verifikasi': 2, 'dokumen-masuk': 3, 'evaluasi-pug': 4 };
-        var menuIndex = pageToMenuIndex[lastPage];
+        var menuIndex = pageToMenuIndex[basePage];
+        
         if (menuIndex !== undefined) {
             document.querySelectorAll('#menu li').forEach(function(li, i) {
                 li.classList.toggle('active', i === menuIndex);
             });
         }
+
         document.getElementById('main-content').innerHTML =
             '<div style="padding:40px;text-align:center;">'
             + '<i class="fa-solid fa-spinner fa-spin fa-2x" style="color:#067fb2;"></i>'
             + '<p style="margin-top:12px;color:#6b7280;">Memuat data...</p></div>';
  
         fetch('/admin/content/' + lastPage, { credentials: 'same-origin' })
-            .then(function(res) { if (!res.ok) throw new Error(); return res.text(); })
+            .then(function(res) { 
+                if (!res.ok) throw new Error('HTTP ' + res.status); 
+                return res.text(); 
+            })
             .then(function(html) {
                 document.getElementById('main-content').innerHTML = html;
-                if      (lastPage === 'permintaan')    initPermintaanPage();
-                else if (lastPage === 'verifikasi')    initVerifikasiPage();
-                else if (lastPage === 'dokumen-masuk') initDokumenMasukPage();
+                if      (basePage === 'permintaan')    initPermintaanPage();
+                else if (basePage === 'verifikasi')    initVerifikasiPage();
+                else if (basePage === 'dokumen-masuk') initDokumenMasukPage();
+                else if (basePage === 'evaluasi-pug') {
+                    if (typeof EvaluasiPUG !== 'undefined') {
+                        var urlParams = new URLSearchParams(lastPage.split('?')[1] || '');
+                        var selectedTahun = urlParams.get('tahun') || new Date().getFullYear();
+                        EvaluasiPUG.init({
+                            isAdmin: true,
+                            tahun: selectedTahun,
+                            routes: {
+                                show       : '/admin/evaluasi-pug/pertanyaan/',
+                                simpan     : '/admin/evaluasi-pug/jawaban',
+                                uploadFile : '/admin/evaluasi-pug/lampiran',
+                                hapusFile  : '/admin/evaluasi-pug/lampiran/',
+                                verifikasi : '/admin/evaluasi-pug/verifikasi',
+                                tambah     : '/admin/evaluasi-pug/pertanyaan',
+                                exportExcel: '/admin/evaluasi-pug/export/excel',
+                                exportPdf  : '/admin/evaluasi-pug/export/pdf',
+                            },
+                            csrf: getCsrf()
+                        });
+                    }
+                }
             })
-            .catch(function() { renderDashboardContent(); });
+            .catch(function(err) { 
+                // ✅ FIX: Jangan lempar ke Dashboard jika error, tampilkan error aslinya!
+                document.getElementById('main-content').innerHTML =
+                    '<div style="padding:24px; color:#ef4444;">'
+                    + '<h3><i class="fa-solid fa-triangle-exclamation"></i> Gagal Memuat Halaman</h3>'
+                    + '<p>Sistem merespon dengan error: <b>' + err.message + '</b></p>'
+                    + '<p style="color:#6b7280; font-size:14px; margin-top:10px;">(Gunakan trik Developer di bawah untuk melihat detail error)</p></div>';
+            });
     } else {
         renderDashboardContent();
     }
