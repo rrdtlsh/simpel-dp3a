@@ -24,7 +24,7 @@
                         Password Saat Ini <span class="pw-required-mark">*</span>
                     </label>
                     <div class="pw-input-wrapper">
-                        <input type="password" name="current_password" id="pwCurrentAdmin" class="pw-input" placeholder="Masukkan password lama" required>
+                        <input type="password" name="current_password" id="pwCurrentAdmin" class="pw-input" placeholder="Masukkan password lama" required maxlength="18">
                         <button type="button" onclick="togglePw('pwCurrentAdmin',this)" class="pw-toggle-btn">
                             <i class="fa-regular fa-eye"></i>
                         </button>
@@ -37,7 +37,7 @@
                         Password Baru <span class="pw-required-mark">*</span>
                     </label>
                     <div class="pw-input-wrapper">
-                        <input type="password" name="new_password" id="pwNewAdmin" class="pw-input" placeholder="Minimal 6 karakter" required minlength="6">
+                        <input type="password" name="new_password" id="pwNewAdmin" class="pw-input" placeholder="Min. 6, Maks. 18 karakter" required maxlength="18">
                         <button type="button" onclick="togglePw('pwNewAdmin',this)" class="pw-toggle-btn">
                             <i class="fa-regular fa-eye"></i>
                         </button>
@@ -50,7 +50,7 @@
                         Konfirmasi Password Baru <span class="pw-required-mark">*</span>
                     </label>
                     <div class="pw-input-wrapper">
-                        <input type="password" name="new_password_confirmation" id="pwConfirmAdmin" class="pw-input" placeholder="Ulangi password baru" required minlength="6">
+                        <input type="password" name="new_password_confirmation" id="pwConfirmAdmin" class="pw-input" placeholder="Ulangi password baru" required maxlength="18">
                         <button type="button" onclick="togglePw('pwConfirmAdmin',this)" class="pw-toggle-btn">
                             <i class="fa-regular fa-eye"></i>
                         </button>

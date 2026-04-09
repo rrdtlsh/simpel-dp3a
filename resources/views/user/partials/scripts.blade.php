@@ -256,14 +256,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ✅ A. Fitur Pencarian (Search)
     const searchInput = document.getElementById('searchPermintaanUser');
+    const emptyRow = document.getElementById('permintaanSearchEmpty');
+    
     if (searchInput) {
         searchInput.addEventListener('input', function() {
             let filter = this.value.toLowerCase();
             let rows = document.querySelectorAll('#tabelPermintaanUser tbody .row-data');
+            let matchCount = 0;
+            
             rows.forEach(row => {
                 let judul = row.dataset.judul || '';
-                row.style.display = judul.includes(filter) ? '' : 'none';
+                if(judul.includes(filter)) {
+                    row.style.display = '';
+                    matchCount++;
+                } else {
+                    row.style.display = 'none';
+                }
             });
+
+            if (emptyRow) {
+                emptyRow.style.display = (matchCount === 0 && filter !== '') ? '' : 'none';
+            }
         });
     }
 
@@ -353,6 +366,69 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   7. REAL-TIME VALIDATION UBAH PASSWORD (SAMA DENGAN ADMIN)
+   ═══════════════════════════════════════════════════════════════════════════ */
+document.addEventListener("input", function (e) {
+    const id = e.target.id;
+
+    if (id === "pwCurrentAdmin" || id === "pwNewAdmin" || id === "pwConfirmAdmin") {
+        let val = e.target.value;
+        let errEl = document.getElementById("err_" + e.target.name); 
+        
+        // Reset tampilan setiap ada ketikan baru
+        e.target.classList.remove("pw-field-error");
+        if (errEl) {
+            errEl.textContent = "";
+            errEl.style.color = "#ef4444"; // Set standar warna teks menjadi Merah
+        }
+
+        if (val.length > 0) {
+            
+            // 1. Peringatan jika kurang dari 6 karakter (Semua Kolom)
+            if (val.length < 6) {
+                if (errEl) errEl.textContent = "Terlalu pendek! Minimal 6 karakter.";
+                e.target.classList.add("pw-field-error");
+            } 
+            // 2. Info peringatan jika ketikan sudah mentok 18 karakter (Semua Kolom)
+            else if (val.length === 18) {
+                if (errEl) {
+                    errEl.textContent = "Batas maksimal 18 karakter tercapai.";
+                    errEl.style.color = "#f59e0b"; // Warna Oren Peringatan
+                }
+            }
+
+            // 3. Pengecekan khusus kecocokan Konfirmasi Password
+            if (id === "pwConfirmAdmin") {
+                let newPw = document.getElementById("pwNewAdmin").value;
+                if (val !== newPw) {
+                    // Jika tidak sama, paksa error merah (meskipun panjangnya sudah 18)
+                    if (errEl) {
+                        errEl.textContent = "Konfirmasi password belum cocok.";
+                        errEl.style.color = "#ef4444";
+                    }
+                    e.target.classList.add("pw-field-error");
+                } else if (val.length >= 6) {
+                    // Jika sama persis dan minimal karakter terpenuhi
+                    if (errEl) {
+                        errEl.textContent = "Password cocok! ✔";
+                        errEl.style.color = "#10b981"; // Warna Hijau Sukses
+                    }
+                    e.target.classList.remove("pw-field-error");
+                }
+            } 
+            
+            // 4. Trigger pengecekan otomatis ke kotak konfirmasi jika password baru diubah
+            if (id === "pwNewAdmin") {
+                let confirmInput = document.getElementById("pwConfirmAdmin");
+                if (confirmInput && confirmInput.value.length > 0) {
+                    confirmInput.dispatchEvent(new Event('input'));
+                }
+            }
+        }
+    }
 });
 
 // Fungsi ini dipanggil dari modal-upload saat sukses upload

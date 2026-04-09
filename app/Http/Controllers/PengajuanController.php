@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Notification;
+use App\Exports\DataExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PengajuanController extends Controller
 {
@@ -218,34 +220,24 @@ class PengajuanController extends Controller
         }
 
         $pengajuans = $query->latest()->get();
-        $fileName = 'Arsip_Dokumen_DP3A_' . time() . '.csv';
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
 
-        $callback = function () use ($pengajuans) {
-            $file = fopen('php://output', 'w');
-            fputs($file, $bom = (chr(0xEF) . chr(0xBB) . chr(0xBF))); // BOM for Excel UTF-8
-            fputcsv($file, ['No', 'Nama Dokumen', 'Bidang Tujuan', 'Tahun', 'Tanggal Diterima']);
+        // Siapkan Data Array
+        $data = [];
+        foreach ($pengajuans as $index => $row) {
+            $fileData = $row->files->first();
+            $data[] = [
+                $index + 1,
+                $row->judul,
+                $row->bidang->nama ?? '-',
+                $row->tahun ?? '-',
+                $fileData ? $fileData->updated_at->format('d M Y H:i') : '-'
+            ];
+        }
 
-            foreach ($pengajuans as $index => $row) {
-                $fileData = $row->files->first();
-                fputcsv($file, [
-                    $index + 1,
-                    $row->judul,
-                    $row->bidang->nama ?? '-',
-                    $row->tahun ?? '-',
-                    $fileData ? $fileData->updated_at->format('d M Y H:i') : '-'
-                ]);
-            }
-            fclose($file);
-        };
+        $headings = ['No', 'Nama Dokumen', 'Bidang Tujuan', 'Tahun', 'Tanggal Diterima'];
+        $fileName = 'Arsip_Dokumen_DP3A_' . time() . '.xlsx'; // Ekstensi .xlsx murni
 
-        return response()->stream($callback, 200, $headers);
+        return Excel::download(new DataExport($data, $headings), $fileName);
     }
 
 
@@ -432,33 +424,23 @@ class PengajuanController extends Controller
         }
 
         $pengajuans = $query->latest()->get();
-        $fileName = 'Arsip_Bidang_' . Auth::user()->bidang->nama . '_' . time() . '.csv';
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
 
-        $callback = function () use ($pengajuans) {
-            $file = fopen('php://output', 'w');
-            fputs($file, $bom = (chr(0xEF) . chr(0xBB) . chr(0xBF)));
-            fputcsv($file, ['No', 'Nama Dokumen', 'Bidang Tujuan', 'Tahun', 'Tanggal Diterima']);
+        // Siapkan Data Array
+        $data = [];
+        foreach ($pengajuans as $index => $row) {
+            $fileData = $row->files->first();
+            $data[] = [
+                $index + 1,
+                $row->judul,
+                $row->bidang->nama ?? '-',
+                $row->tahun ?? '-',
+                $fileData ? $fileData->updated_at->format('d M Y H:i') : '-'
+            ];
+        }
 
-            foreach ($pengajuans as $index => $row) {
-                $fileData = $row->files->first();
-                fputcsv($file, [
-                    $index + 1,
-                    $row->judul,
-                    $row->bidang->nama ?? '-',
-                    $row->tahun ?? '-',
-                    $fileData ? $fileData->updated_at->format('d M Y H:i') : '-'
-                ]);
-            }
-            fclose($file);
-        };
+        $headings = ['No', 'Nama Dokumen', 'Bidang Tujuan', 'Tahun', 'Tanggal Diterima'];
+        $fileName = 'Arsip_Bidang_' . Auth::user()->bidang->nama . '_' . time() . '.xlsx';
 
-        return response()->stream($callback, 200, $headers);
+        return Excel::download(new DataExport($data, $headings), $fileName);
     }
 }

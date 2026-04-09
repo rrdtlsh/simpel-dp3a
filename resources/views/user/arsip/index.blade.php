@@ -25,13 +25,13 @@
         </select>
         
         {{-- Export PDF --}}
-        <button onclick="window.location.href='{{ route('user.export.pdf') }}' + '?tahun=' + document.getElementById('filterTahunUser').value"
+        <button id="btnExportPdfUser"
             style="padding: 10px 16px; background: #E74A3B; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
             <i class="fa-solid fa-file-pdf"></i> Export PDF
         </button>
 
         {{-- Export Excel --}}
-        <button onclick="window.location.href='{{ route('user.export.excel') }}' + '?tahun=' + document.getElementById('filterTahunUser').value"
+        <button id="btnExportExcelUser"
             style="padding: 10px 16px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
             <i class="fa-solid fa-file-excel"></i> Export Excel
         </button>
@@ -87,6 +87,13 @@
                     <td colspan="5" style="padding: 20px; text-align: center; color: #888;">Belum ada arsip dokumen yang diterima.</td>
                 </tr>
             @endforelse
+            <tr id="arsipSearchEmpty" style="display:none;">
+                <td colspan="5" style="text-align: center; padding: 40px 20px; background: #fff;">
+                    <i class="fa-solid fa-magnifying-glass" style="font-size:3rem; color:#d1d5db; margin-bottom: 12px; display:block;"></i>
+                    <h4 style="margin: 0 0 6px 0; color: #374151; font-size: 1.1rem;">Hasil Pencarian Tidak Ditemukan</h4>
+                    <p style="margin: 0; color: #9ca3af; font-size: 0.85rem;">Coba gunakan kata kunci pencarian yang lain.</p>
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -98,8 +105,11 @@
     function filterArsipUser() {
         let textFilter = document.getElementById('searchArsipUser')?.value.toLowerCase() || '';
         let yearFilter = document.getElementById('filterTahunUser')?.value || '';
+        let emptyRow = document.getElementById('arsipSearchEmpty');
         
         let rows = document.querySelectorAll('#tabelArsipUser tbody .row-data');
+        let matchCount = 0;
+
         rows.forEach(row => {
             let judul = row.dataset.judul || '';
             let tahun = row.dataset.tahun || '';
@@ -107,8 +117,17 @@
             let matchText = judul.includes(textFilter);
             let matchYear = yearFilter === '' || tahun === yearFilter;
             
-            row.style.display = (matchText && matchYear) ? '' : 'none';
+            if (matchText && matchYear) {
+                row.style.display = '';
+                matchCount++;
+            } else {
+                row.style.display = 'none';
+            }
         });
+
+        if (emptyRow) {
+            emptyRow.style.display = (matchCount === 0 && (textFilter !== '' || yearFilter !== '')) ? '' : 'none';
+        }
     }
 
     document.getElementById('searchArsipUser')?.addEventListener('input', filterArsipUser);
@@ -160,6 +179,29 @@
                 width: '500px'
             });
         });
+    });
+
+    // === FITUR EXPORT DENGAN LOADING (SAMA SEPERTI ADMIN) ===
+    document.getElementById('btnExportPdfUser')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        let tahun = document.getElementById('filterTahunUser')?.value || '';
+
+        Swal.fire({ title: 'Menyiapkan PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+        window.location.href = '{{ route("user.export.pdf") }}' + '?tahun=' + tahun;
+
+        setTimeout(() => Swal.close(), 3000);
+    });
+
+    document.getElementById('btnExportExcelUser')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        let tahun = document.getElementById('filterTahunUser')?.value || '';
+        
+        Swal.fire({ title: 'Menyiapkan Excel...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        
+        window.location.href = '{{ route("user.export.excel") }}' + '?tahun=' + tahun;
+        
+        setTimeout(() => Swal.close(), 2000);
     });
 </script>
 @endpush

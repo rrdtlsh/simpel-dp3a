@@ -1,5 +1,14 @@
+@extends('layouts.user')
+@section('title', 'Evaluasi Mandiri PUG')
+
+@push('styles')
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link rel="stylesheet" href="{{ asset('css/evaluasi_pug.css') }}">
+@endpush
+
+@section('content')
 <div class="epug-wrap">
-    {{-- Header dengan tombol aksi --}}
+    {{-- Header tanpa tombol Tambah Pertanyaan --}}
     <div class="epug-header">
         <div class="epug-header-left">
             <h2 class="epug-title">Evaluasi Mandiri PUG</h2>
@@ -19,15 +28,11 @@
             <button class="epug-btn epug-btn-pdf" id="epugBtnExportPdf">
                 <i class="fa-solid fa-file-pdf"></i> Export PDF
             </button>
-            <button class="epug-btn epug-btn-primary" id="epugBtnTambahPertanyaan">
-                <i class="fa-solid fa-plus"></i> Tambah Pertanyaan
-            </button>
         </div>
     </div>
 
     {{-- ── SCORING CARDS & CHART ── --}}
     <div class="epug-dashboard-top" style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 24px;">
-        {{-- Card Total Skor Tunggal --}}
         <div class="epug-score-card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; background:#fff; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,.07);">
             <span class="epug-score-label" style="font-size: 1rem; color: #4b5563; font-weight:700;">Total Capaian PUG</span>
             <div class="epug-score-value" style="font-size: 3.5rem; font-weight:800; color: #067fb2; margin: 15px 0; line-height:1;">
@@ -41,14 +46,12 @@
             </span>
         </div>
 
-        {{-- Wadah Chart ApexCharts --}}
         <div class="epug-score-card" style="padding: 20px; background:#fff; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,.07);">
             <span style="font-size:.9rem; font-weight:700; color:#111827;">Sebaran Skor per Komponen</span>
             <div id="epugComponentChart" style="min-height: 220px; margin-top: 10px;"></div>
         </div>
     </div>
 
-    {{-- Data Tersembunyi untuk dibaca oleh Javascript Chart --}}
     <div id="epugChartData" data-categories="{{ json_encode($chartData['categories']) }}" data-series="{{ json_encode($chartData['series']) }}" style="display:none;"></div>
 
     @php
@@ -150,26 +153,11 @@
                                 <span class="epug-skor-text">
                                     Skor: {{ number_format($jwb?->skor ?? 0, 2) }} / {{ number_format($pert->skor_maksimal, 2) }}
                                 </span>
+                                {{-- Hanya tombol LIHAT, tidak ada edit dan hapus --}}
                                 <button class="epug-btn-lihat epug-btn-lihat-trigger"
                                     data-pert-id="{{ $pert->id }}"
                                     data-tahun="{{ $tahunData }}">
-                                    Lihat
-                                </button>
-                                @if(!in_array($status, ['disetujui', 'ditolak']))
-                                <button class="epug-btn-icon epug-btn-edit-pert" title="Edit Pertanyaan"
-                                    data-id="{{ $pert->id }}" 
-                                    data-indikator="{{ $pert->indikator_id }}"
-                                    data-kode="{{ $pert->kode }}"
-                                    data-pertanyaan="{{ htmlspecialchars($pert->pertanyaan, ENT_QUOTES, 'UTF-8') }}"
-                                    data-skor="{{ $pert->skor_maksimal }}"
-                                    data-petunjuk="{{ htmlspecialchars($pert->petunjuk ?? '', ENT_QUOTES, 'UTF-8') }}"
-                                    data-pilihan="{{ htmlspecialchars(json_encode($pert->pilihan_jawaban), ENT_QUOTES, 'UTF-8') }}">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                @endif
-                                
-                                <button class="epug-btn-icon epug-btn-del-pert" title="Hapus Pertanyaan" data-id="{{ $pert->id }}">
-                                    <i class="fa-solid fa-trash-can"></i>
+                                    Jawab / Lihat
                                 </button>
                             </div>
                         </div>
@@ -186,7 +174,7 @@
         </div>
         @endforelse
     </div>
-    {{-- ── PESAN JIKA SEARCH KOSONG ── --}}
+    
     <div id="epugSearchEmpty" class="epug-empty" style="display:none; padding: 50px 20px; text-align: center; background: #fff; border-radius: 10px; margin-top: 15px; box-shadow: var(--ep-shadow);">
         <i class="fa-solid fa-magnifying-glass" style="font-size:3rem; color:#d1d5db; margin-bottom: 12px;"></i>
         <h4 style="margin: 0 0 6px 0; color: #374151; font-size: 1.1rem;">Hasil Pencarian Tidak Ditemukan</h4>
@@ -194,12 +182,7 @@
     </div>
 </div>
 
-    <div id="epugTabDaftar" class="epug-tab-content" style="display:none;">
-        <p style="color:#6b7280; font-size:.875rem;">Tampilan daftar komponen akan ditampilkan di sini.</p>
-    </div>
-</div>
-
-{{-- MODAL DETAIL & JAWAB PERTANYAAN --}}
+{{-- MODAL JAWAB PERTANYAAN (USER) --}}
 <div id="epugModal" class="epug-modal-overlay" style="display:none;" role="dialog" aria-modal="true">
     <div class="epug-modal-dialog">
         <div class="epug-modal-header">
@@ -253,6 +236,7 @@
                 <p id="epugErrFile" class="epug-field-error" style="display:none;"></p>
             </div>
 
+            {{-- Kolom Verifikasi Admin dihilangkan --}}
             <div id="epugSkorSection" class="epug-skor-section" style="display:none;">
                 <div class="epug-skor-row">
                     <div>
@@ -266,21 +250,13 @@
                 </div>
             </div>
 
-            <div id="epugAdminVerif" class="epug-admin-verif" style="display:none;">
-                <h4 class="epug-section-title">Verifikasi Admin</h4>
-                <textarea id="epugCatatanAdmin" class="epug-textarea" rows="3" placeholder="Tulis catatan admin (wajib diisi)..."></textarea>
-                <p id="epugErrCatatanAdmin" class="epug-field-error" style="display:none;"></p>
-                <div class="epug-verif-actions">
-                    <button class="epug-btn epug-btn-danger" id="epugBtnTolak">
-                        <i class="fa-solid fa-xmark"></i> Tolak
-                    </button>
-                    <button class="epug-btn epug-btn-success" id="epugBtnSetujui">
-                        <i class="fa-solid fa-check"></i> Setujui
-                    </button>
-                </div>
+            {{-- Catatan dari Admin (Hanya dibaca, jika ada) --}}
+            <div id="epugCatatanAdminReadonly" class="epug-section" style="display:none; background: #fdf2f8; border-left: 4px solid #be185d; padding: 12px; margin-top: 15px; border-radius: 4px;">
+                <strong style="color: #9d174d; font-size: 13px;"><i class="fa-solid fa-comment-dots"></i> Catatan Verifikasi Admin:</strong>
+                <div id="epugCatatanAdminText" style="margin-top: 5px; font-size: 13.5px; color: #831843;"></div>
             </div>
 
-            <div class="epug-section">
+            <div class="epug-section" style="margin-top: 15px;">
                 <button class="epug-collapse-btn" id="epugAuditToggle">
                     <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Perubahan
                     <i class="fa-solid fa-chevron-down" id="epugAuditChevron"></i>
@@ -300,65 +276,26 @@
     </div>
 </div>
 
-{{-- MODAL TAMBAH / EDIT PERTANYAAN (ADMIN) --}}
-<div id="epugModalTambah" class="epug-modal-overlay" style="display:none;">
-    <div class="epug-modal-dialog" style="max-width:600px;">
-        <div class="epug-modal-header">
-            <h3 class="epug-modal-title">Tambah Pertanyaan</h3>
-            <button class="epug-modal-close" id="epugModalTambahClose">&times;</button>
-        </div>
-        <div class="epug-modal-body">
-            <div class="epug-form-group">
-                <label class="epug-label">Indikator <span class="epug-required">*</span></label>
-                <select id="epugTambahIndikator" class="epug-select">
-                    <option value="">-- Pilih Indikator --</option>
-                    @foreach($komponen ?? [] as $komp)
-                        @foreach($komp->indikator as $indk)
-                            <option value="{{ $indk->id }}">{{ $indk->kode }}. {{ $indk->nama }}</option>
-                        @endforeach
-                    @endforeach
-                </select>
-                <p id="epugErrIndikator_id" class="epug-field-error" style="display:none;"></p>
-            </div>
-            <div class="epug-form-group">
-                <label class="epug-label">Kode <span class="epug-required">*</span></label>
-                <input type="text" id="epugTambahKode" class="epug-input" placeholder="1.1" maxlength="10">
-                <p id="epugErrKode" class="epug-field-error" style="display:none;"></p>
-            </div>
-            <div class="epug-form-group">
-                <label class="epug-label">Pertanyaan <span class="epug-required">* (Maks 250 Karakter)</span></label>
-                <textarea id="epugTambahPertanyaan" class="epug-textarea" rows="2" placeholder="Tulis pertanyaan..." maxlength="250"></textarea>
-                <p id="epugErrPertanyaan" class="epug-field-error" style="display:none;"></p>
-            </div>
-            <div class="epug-form-group">
-                <label class="epug-label">Skor Maksimal <span class="epug-required">* (Maks 100)</span></label>
-                <input type="number" id="epugTambahSkorMaks" class="epug-input" min="0" max="100" step="0.01">
-                <p id="epugErrSkor_maksimal" class="epug-field-error" style="display:none;"></p>
-            </div>
-            <div class="epug-form-group">
-                <label class="epug-label">Pilihan Jawaban <span class="epug-required">*</span></label>
-                <div id="epugPilihanBuilder">
-                    <div class="epug-pilihan-item">
-                        <input type="text" class="epug-input epug-pilihan-label" placeholder="Label jawaban" maxlength="200">
-                        <input type="number" class="epug-input epug-pilihan-skor" placeholder="Skor" min="0" max="100" step="0.01" style="width:100px;">
-                    </div>
-                </div>
-                <p id="epugErrPilihan_jawaban" class="epug-field-error" style="display:none; margin-bottom:8px;"></p>
-                <button type="button" class="epug-btn-add-pilihan" id="epugBtnAddPilihan">
-                    <i class="fa-solid fa-plus"></i> Tambah Pilihan
-                </button>
-            </div>
-            <div class="epug-form-group">
-                <label class="epug-label">Petunjuk (opsional)</label>
-                <textarea id="epugTambahPetunjuk" class="epug-textarea" rows="2" placeholder="Tulis petunjuk pengisian..." maxlength="2000"></textarea>
-                <p id="epugErrPetunjuk" class="epug-field-error" style="display:none;"></p>
-            </div>
-        </div>
-        <div class="epug-modal-footer">
-            <button class="epug-btn epug-btn-secondary" id="epugModalTambahCancel">Batal</button>
-            <button class="epug-btn epug-btn-primary" id="epugBtnSimpanPertanyaan">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan
-            </button>
-        </div>
-    </div>
-</div>
+@endsection
+
+@push('scripts')
+    {{-- ✅ JS Khusus User (Segera kita buat di Tahap 4) --}}
+    <script src="{{ asset('js/user_evaluasi_pug.js') }}?v={{ time() }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if(typeof UserEvaluasiPUG !== 'undefined') {
+                UserEvaluasiPUG.init({
+                    tahun: {{ $tahun }},
+                    routes: {
+                        show: '/user/evaluasi-pug/pertanyaan/',
+                        simpan: '/user/evaluasi-pug/jawaban',
+                        uploadFile: '/user/evaluasi-pug/lampiran',
+                        hapusFile: '/user/evaluasi-pug/lampiran/',
+                        exportExcel: '/user/evaluasi-pug/export/excel',
+                        exportPdf: '/user/evaluasi-pug/export/pdf'
+                    }
+                });
+            }
+        });
+    </script>
+@endpush

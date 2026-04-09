@@ -93,10 +93,17 @@
                     </td>
                 </tr>
                 @empty
-                <tr class="table-empty-row">
-                    <td colspan="6">Belum ada pengajuan.</td>
+                <tr class="verifikasi-empty-row">
+                    <td colspan="6" style="text-align: center; padding: 20px; color: #6b7280;">Belum ada pengajuan dokumen.</td>
                 </tr>
                 @endforelse
+                <tr id="verifikasiSearchEmpty" style="display:none;">
+                    <td colspan="6" style="text-align: center; padding: 40px 20px; background: #fff;">
+                        <i class="fa-solid fa-magnifying-glass" style="font-size:3rem; color:#d1d5db; margin-bottom: 12px; display:block;"></i>
+                        <h4 style="margin: 0 0 6px 0; color: #374151; font-size: 1.1rem;">Hasil Pencarian Tidak Ditemukan</h4>
+                        <p style="margin: 0; color: #9ca3af; font-size: 0.85rem;">Coba gunakan kata kunci pencarian yang lain.</p>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>

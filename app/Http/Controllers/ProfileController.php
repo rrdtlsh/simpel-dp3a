@@ -63,25 +63,30 @@ class ProfileController extends Controller
     {
         $request->validate([
             'current_password' => ['required'],
-            'new_password' => ['required', 'min:6', 'confirmed'], // confirmed otomatis ngecek input 'new_password_confirmation'
+            'new_password' => ['required', 'string', 'min:6', 'max:18', 'confirmed'],
         ], [
             'current_password.required' => 'Password saat ini wajib diisi.',
             'new_password.required' => 'Password baru wajib diisi.',
-            'new_password.min' => 'Password baru minimal 6 karakter.',
+            'new_password.string'   => 'Format password tidak valid.',
+            'new_password.min'      => 'Password baru minimal 6 karakter.',
+            'new_password.max'      => 'Password baru maksimal 18 karakter.',
             'new_password.confirmed' => 'Konfirmasi password baru tidak cocok.',
         ]);
 
-        // Gunakan $request->user() agar IDE membacanya sebagai Model
         $user = $request->user();
 
-        // Cek apakah password lama yang diketik sesuai dengan di database
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'errors' => ['current_password' => ['Password saat ini yang Anda masukkan salah.']]
             ], 422);
         }
 
-        // Simpan password baru menggunakan property assignment dan save()
+        if ($request->current_password === $request->new_password) {
+            return response()->json([
+                'errors' => ['new_password' => ['Tidak ada perubahan, masukkan password baru.']]
+            ], 422);
+        }
+
         $user->password = Hash::make($request->new_password);
         $user->save();
 

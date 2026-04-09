@@ -159,6 +159,9 @@
                 <li class="{{ request()->routeIs('user.arsip') ? 'active' : '' }}">
                     <a href="{{ route('user.arsip') }}">Arsip Dokumen</a>
                 </li>
+                <li class="{{ request()->routeIs('user.evaluasi-pug.*') ? 'active' : '' }}">
+                    <a href="{{ route('user.evaluasi-pug.index') }}">Pertanyaan Evaluasi PUG</a>
+                </li>
             </ul>
         </div>
 

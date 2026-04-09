@@ -1,4 +1,4 @@
-var EvaluasiPUG = (function () {
+var UserEvaluasiPUG = (function () {
     'use strict';
 
     /* ── State ──────────────────────────────────────────────────────── */
@@ -33,7 +33,7 @@ var EvaluasiPUG = (function () {
     }
 
     function clearFieldErrors() {
-        ['epugErrJawaban', 'epugErrCatatan', 'epugErrFile', 'epugErrCatatanAdmin', 'epugErrIndikator'].forEach(function (id) {
+        ['epugErrJawaban', 'epugErrCatatan', 'epugErrFile'].forEach(function (id) {
             showFieldError(id, '');
         });
     }
@@ -96,7 +96,6 @@ var EvaluasiPUG = (function () {
     function bindTreeToggle(container) {
         /* Komponen toggle */
         container.querySelectorAll('[data-toggle]').forEach(function (btn) {
-            /* Cegah duplikasi listener dengan flag */
             if (btn.dataset.epugBound) return;
             btn.dataset.epugBound = '1';
 
@@ -134,13 +133,13 @@ var EvaluasiPUG = (function () {
        ══════════════════════════════════════════════════════════════════ */
     function bindSearch() {
         var searchInput = document.getElementById('epugSearchInput');
-        var emptyMessage = document.getElementById('epugSearchEmpty'); // Target pesan kosong HTML
+        var emptyMessage = document.getElementById('epugSearchEmpty');
         if (!searchInput) return;
 
         searchInput.addEventListener('input', function (e) {
             var filter = e.target.value.toLowerCase().trim();
             var komponenBlocks = document.querySelectorAll('.epug-komponen-block');
-            var totalMatch = 0; // Variabel penghitung jumlah temuan
+            var totalMatch = 0;
 
             komponenBlocks.forEach(function (komp) {
                 var kompHasMatch = false;
@@ -150,23 +149,20 @@ var EvaluasiPUG = (function () {
                     var indkHasMatch = false;
                     var pertRows = indk.querySelectorAll('.epug-pertanyaan-row');
 
-                    // Filter level Pertanyaan
                     pertRows.forEach(function (pert) {
                         var text = pert.querySelector('.epug-pert-text').textContent.toLowerCase();
                         if (text.includes(filter)) {
-                            pert.style.display = 'flex'; // Tampilkan baris
+                            pert.style.display = 'flex';
                             indkHasMatch = true;
                             kompHasMatch = true;
-                            totalMatch++; // ✅ Tambah hitungan jika cocok
+                            totalMatch++;
                         } else {
-                            pert.style.display = 'none'; // Sembunyikan baris
+                            pert.style.display = 'none';
                         }
                     });
 
-                    // Logika tampilan level Indikator
                     if (indkHasMatch) {
                         indk.style.display = 'block';
-                        // Paksa buka chevron jika sedang mencari
                         if (filter !== '') {
                             var indkBody = indk.querySelector('.epug-indikator-body');
                             var indkChevron = indk.querySelector('.epug-chevron-sm');
@@ -178,10 +174,8 @@ var EvaluasiPUG = (function () {
                     }
                 });
 
-                // Logika tampilan level Komponen
                 if (kompHasMatch) {
                     komp.style.display = 'block';
-                    // Paksa buka chevron jika sedang mencari
                     if (filter !== '') {
                         var kompBody = komp.querySelector('.epug-komponen-body');
                         var kompChevron = komp.querySelector('.epug-chevron');
@@ -193,7 +187,6 @@ var EvaluasiPUG = (function () {
                 }
             });
 
-            // ✅ TAMPILKAN PESAN KOSONG JIKA TIDAK ADA YANG COCOK SAAT MENCARI
             if (emptyMessage) {
                 if (filter !== '' && totalMatch === 0) {
                     emptyMessage.style.display = 'block';
@@ -205,7 +198,7 @@ var EvaluasiPUG = (function () {
     }
 
     /* ══════════════════════════════════════════════════════════════════
-       MODAL DETAIL PERTANYAAN
+       MODAL DETAIL PERTANYAAN (USER)
        ══════════════════════════════════════════════════════════════════ */
     function openDetailModal(pertanyaanId, tahun) {
         _state.pertanyaanId = pertanyaanId;
@@ -240,6 +233,7 @@ var EvaluasiPUG = (function () {
         var versi = data.versi || [];
         var petunjukAlert = document.getElementById('epugPetunjukAlert');
         var petunjukText = document.getElementById('epugModalPetunjuk');
+
         if (petunjukAlert && petunjukText) {
             if (pert.petunjuk && pert.petunjuk.trim() !== '') {
                 petunjukText.textContent = 'Petunjuk: ' + pert.petunjuk;
@@ -248,7 +242,7 @@ var EvaluasiPUG = (function () {
                 petunjukAlert.style.display = 'none';
             }
         }
-        /* Breadcrumb & Judul */
+
         var breadcrumb = document.getElementById('epugModalBreadcrumb');
         if (breadcrumb) {
             breadcrumb.textContent = (pert.indikator?.komponen?.nama || '') + ' / ' + (pert.indikator?.nama || '');
@@ -263,11 +257,11 @@ var EvaluasiPUG = (function () {
             if (jwb) {
                 if (jwb.status === 'disetujui') {
                     alertEl.className = 'epug-alert epug-alert-success';
-                    alertEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Jawaban telah <strong>disetujui</strong>. Tidak dapat diedit lagi.</span>';
+                    alertEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Jawaban telah <strong>disetujui</strong> Admin. Tidak dapat diedit lagi.</span>';
                     alertEl.style.display = 'flex';
                 } else if (jwb.status === 'ditolak') {
                     alertEl.className = 'epug-alert epug-alert-danger';
-                    alertEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>Jawaban <strong>ditolak</strong>. Silakan perbaiki dan simpan ulang.</span>';
+                    alertEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>Jawaban <strong>ditolak/direvisi</strong> oleh Admin. Silakan perbaiki dan simpan ulang.</span>';
                     alertEl.style.display = 'flex';
                 }
             }
@@ -292,8 +286,6 @@ var EvaluasiPUG = (function () {
         if (skorSection && jwb) {
             document.getElementById('epugSkorValue').textContent = jwb.skor;
             document.getElementById('epugJawabanSaved').textContent = jwb.jawaban_label || '-';
-            var catatanSaved = document.getElementById('epugCatatanSaved');
-            if (catatanSaved) catatanSaved.textContent = jwb.catatan || '-';
             skorSection.style.display = 'block';
         } else if (skorSection) {
             skorSection.style.display = 'none';
@@ -308,10 +300,16 @@ var EvaluasiPUG = (function () {
             _state.skorPilihan = jwb.skor;
         }
 
-        /* Admin verifikasi */
-        var verifEl = document.getElementById('epugAdminVerif');
-        if (verifEl) {
-            verifEl.style.display = (_cfg.isAdmin && jwb && jwb.status === 'diisi') ? 'block' : 'none';
+        /* ✅ Fitur Khusus User: Menampilkan Catatan Verifikasi Admin (Read Only) */
+        var verifReadonly = document.getElementById('epugCatatanAdminReadonly');
+        var verifText = document.getElementById('epugCatatanAdminText');
+        if (verifReadonly && verifText) {
+            if (jwb && jwb.catatan_admin && jwb.catatan_admin.trim() !== '') {
+                verifText.textContent = jwb.catatan_admin;
+                verifReadonly.style.display = 'block';
+            } else {
+                verifReadonly.style.display = 'none';
+            }
         }
 
         /* Simpan btn — disabled jika disetujui */
@@ -344,45 +342,12 @@ var EvaluasiPUG = (function () {
                 + (isLocked ? ' disabled' : '') + '>'
                 + '<span class="epug-pilihan-label-text">' + escHtml(item.label || '') + '</span>';
 
-            /* Sub-pilihan */
-            if (item.sub_pilihan && item.sub_pilihan.length) {
-                var subWrap = document.createElement('div');
-                subWrap.className = 'epug-sub-pilihan';
-                subWrap.style.display = isSelected ? 'flex' : 'none';
-                subWrap.style.flexDirection = 'column';
-
-                item.sub_pilihan.forEach(function (sub) {
-                    var isSubSel = jwb && jwb.jawaban_kode && jwb.jawaban_kode.includes(sub.kode || sub.label.substr(0, 3));
-                    var subDiv = document.createElement('div');
-                    subDiv.className = 'epug-sub-option' + (isSubSel ? ' selected' : '');
-                    subDiv.setAttribute('data-kode', sub.kode || '');
-                    subDiv.setAttribute('data-label', sub.label || '');
-                    subDiv.setAttribute('data-skor', sub.skor || 0);
-                    subDiv.innerHTML =
-                        '<input type="radio" name="epugSubPilihan" value="' + escHtml(sub.kode || '') + '"'
-                        + (isSubSel ? ' checked' : '')
-                        + (isLocked ? ' disabled' : '') + '>'
-                        + '<span style="font-size:.82rem;">' + escHtml(sub.label || '') + '</span>';
-                    subWrap.appendChild(subDiv);
-                });
-                div.appendChild(subWrap);
-            }
-
             if (!isLocked) {
                 div.addEventListener('click', function (e) {
-                    if (e.target.closest('.epug-sub-pilihan')) return; // delegasi ke sub
                     onPilihanClick(div, item);
                 });
             }
             container.appendChild(div);
-        });
-
-        /* Sub pilihan click delegation */
-        container.querySelectorAll('.epug-sub-option').forEach(function (subDiv) {
-            subDiv.addEventListener('click', function () {
-                var parent = this.closest('.epug-pilihan-option');
-                onSubPilihanClick(subDiv, parent);
-            });
         });
     }
 
@@ -392,39 +357,17 @@ var EvaluasiPUG = (function () {
             d.classList.remove('selected');
             var radio = d.querySelector('input[type="radio"]');
             if (radio) radio.checked = false;
-            var sub = d.querySelector('.epug-sub-pilihan');
-            if (sub) sub.style.display = 'none';
         });
 
         div.classList.add('selected');
         var radio = div.querySelector('input[type="radio"]');
         if (radio) radio.checked = true;
 
-        /* Tampilkan sub pilihan jika ada */
-        var subWrap = div.querySelector('.epug-sub-pilihan');
-        if (subWrap) subWrap.style.display = 'flex';
-
         _state.pilihanKode = item.kode || item.label;
         _state.pilihanLabel = item.label;
         _state.skorPilihan = parseFloat(item.skor) || 0;
 
         showFieldError('epugErrJawaban', '');
-    }
-
-    function onSubPilihanClick(subDiv, parentDiv) {
-        if (!parentDiv) return;
-        parentDiv.querySelectorAll('.epug-sub-option').forEach(function (d) {
-            d.classList.remove('selected');
-            var r = d.querySelector('input[type="radio"]');
-            if (r) r.checked = false;
-        });
-        subDiv.classList.add('selected');
-        var r = subDiv.querySelector('input[type="radio"]');
-        if (r) r.checked = true;
-
-        _state.pilihanKode = (parentDiv.dataset.kode || '') + '>' + (subDiv.dataset.kode || '');
-        _state.pilihanLabel = (parentDiv.dataset.label || '') + ' > ' + (subDiv.dataset.label || '');
-        _state.skorPilihan = parseFloat(subDiv.dataset.skor) || 0;
     }
 
     function renderLampiran(files, isLocked) {
@@ -440,7 +383,7 @@ var EvaluasiPUG = (function () {
                 '<span><i class="fa-solid fa-file" style="margin-right:5px;color:#067fb2;"></i>'
                 + escHtml(f.nama_file) + ' (' + fmtFileSize(f.ukuran || 0) + ')</span>'
                 + '<div style="display:flex;align-items:center;gap:8px;">'
-                + '<a href="/storage/' + escHtml(f.path_file) + '" target="_blank" download>'
+                + '<a href="' + escHtml(f.url) + '" target="_blank" download>'
                 + '<i class="fa-solid fa-download"></i></a>'
                 + (isLocked ? '' : '<button class="epug-lampiran-del" data-lampiran-id="' + f.id + '" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>')
                 + '</div>';
@@ -463,8 +406,8 @@ var EvaluasiPUG = (function () {
         var aksiLabel = {
             'isi_jawaban': '📝 Mengisi Jawaban',
             'ubah_jawaban': '✏️ Mengubah Jawaban',
-            'setujui': '✅ Menyetujui',
-            'tolak': '❌ Menolak',
+            'setujui': '✅ Disetujui Admin',
+            'tolak': '❌ Ditolak/Revisi Admin',
             'upload_lampiran': '📎 Upload Lampiran',
         };
 
@@ -479,7 +422,6 @@ var EvaluasiPUG = (function () {
             auditList.appendChild(div);
         });
 
-        /* Versi sebelumnya */
         if (versi.length > 1) {
             var versiTitle = document.createElement('p');
             versiTitle.style.cssText = 'font-weight:700;font-size:.78rem;margin:10px 0 6px;color:#6b7280;';
@@ -499,7 +441,7 @@ var EvaluasiPUG = (function () {
     }
 
     /* ══════════════════════════════════════════════════════════════════
-       VALIDASI & SIMPAN JAWABAN
+       VALIDASI & SIMPAN JAWABAN (USER)
        ══════════════════════════════════════════════════════════════════ */
     function updateCatatanCounter() {
         var el = document.getElementById('epugCatatan');
@@ -547,7 +489,7 @@ var EvaluasiPUG = (function () {
             .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d, status: r.status }; }); })
             .then(function (res) {
                 if (res.ok && res.data.success) {
-                    Swal.fire({ icon: 'success', title: 'Tersimpan!', text: 'Jawaban berhasil disimpan.', timer: 1800, showConfirmButton: false });
+                    Swal.fire({ icon: 'success', title: 'Tersimpan!', text: 'Jawaban Anda berhasil dikirim.', timer: 1800, showConfirmButton: false });
                     closeModal('epugModal');
                     refreshRow(_state.pertanyaanId);
                 } else if (res.status === 422) {
@@ -566,7 +508,7 @@ var EvaluasiPUG = (function () {
     }
 
     /* ══════════════════════════════════════════════════════════════════
-       UPLOAD FILE
+       UPLOAD FILE (USER)
        ══════════════════════════════════════════════════════════════════ */
     function handleFileUpload(files) {
         var allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'image/jpeg', 'image/png'];
@@ -579,11 +521,10 @@ var EvaluasiPUG = (function () {
         formData.append('tahun', _state.tahun);
 
         var valid = true;
-        // ✅ LOOP SEMUA FILE YANG DIPILIH
         Array.from(files).forEach(function (file) {
             if (!allowedTypes.includes(file.type)) { showFieldError('epugErrFile', 'Format file tidak didukung: ' + file.name); valid = false; }
             if (file.size > 10 * 1024 * 1024) { showFieldError('epugErrFile', 'File melebihi 10 MB: ' + file.name); valid = false; }
-            formData.append('file[]', file); // Tambahkan ke array formdata
+            formData.append('file[]', file);
         });
 
         if (!valid) return;
@@ -599,7 +540,6 @@ var EvaluasiPUG = (function () {
                     _state.jawabanId = res.data.jawaban_id;
                     var list = document.getElementById('epugLampiranList');
 
-                    // ✅ LOOP DAN RENDER HASIL UPLOAD
                     res.data.lampirans.forEach(function (lmp) {
                         var newItem = document.createElement('div');
                         newItem.className = 'epug-lampiran-item';
@@ -622,140 +562,7 @@ var EvaluasiPUG = (function () {
     }
 
     /* ══════════════════════════════════════════════════════════════════
-       VERIFIKASI ADMIN
-       ══════════════════════════════════════════════════════════════════ */
-    function submitVerifikasi(aksi) {
-        var catatanAdmin = document.getElementById('epugCatatanAdmin')?.value.trim() || '';
-        if (!catatanAdmin || catatanAdmin.length < 5) {
-            showFieldError('epugErrCatatanAdmin', 'Catatan admin wajib diisi (minimal 5 karakter).');
-            return;
-        }
-
-        var label = aksi === 'disetujui' ? 'Setujui' : 'Tolak';
-        Swal.fire({
-            title: label + ' Jawaban?',
-            text: 'Aksi ini tidak dapat dibatalkan.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: aksi === 'disetujui' ? '#22c55e' : '#ef4444',
-            cancelButtonColor: '#9ca3af',
-            confirmButtonText: 'Ya, ' + label,
-            cancelButtonText: 'Batal',
-        }).then(function (result) {
-            if (!result.isConfirmed) return;
-
-            apiFetch(_cfg.routes.verifikasi, {
-                method: 'POST',
-                body: JSON.stringify({ jawaban_id: _state.jawabanId, aksi: aksi, catatan_admin: catatanAdmin }),
-            })
-                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d, status: r.status }; }); })
-                .then(function (res) {
-                    if (res.ok && res.data.success) {
-                        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Verifikasi berhasil.', timer: 1800, showConfirmButton: false });
-                        closeModal('epugModal');
-                        refreshRow(_state.pertanyaanId);
-                    } else if (res.status === 422) {
-                        var errs = res.data.errors || {};
-                        Object.keys(errs).forEach(function (field) {
-                            if (field === 'catatan_admin') showFieldError('epugErrCatatanAdmin', errs[field][0]);
-                        });
-                    } else {
-                        Swal.fire('Gagal', res.data.message || 'Terjadi kesalahan.', 'error');
-                    }
-                })
-                .catch(function () { Swal.fire('Error', 'Koneksi bermasalah.', 'error'); });
-        });
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       TAMBAH / EDIT PERTANYAAN (ADMIN) & VALIDASI
-       ══════════════════════════════════════════════════════════════════ */
-    function simpanPertanyaanBaru() {
-        var indikatorId = document.getElementById('epugTambahIndikator')?.value;
-        var kode = document.getElementById('epugTambahKode')?.value.trim();
-        var pertanyaan = document.getElementById('epugTambahPertanyaan')?.value.trim();
-        var skorMaks = document.getElementById('epugTambahSkorMaks')?.value;
-        var petunjuk = document.getElementById('epugTambahPetunjuk')?.value.trim();
-
-        /* Kumpulkan pilihan */
-        var pilihan = [];
-        document.querySelectorAll('.epug-pilihan-item').forEach(function (item) {
-            var labelEl = item.querySelector('.epug-pilihan-label');
-            var skorEl = item.querySelector('.epug-pilihan-skor');
-            if (labelEl && labelEl.value.trim()) {
-                pilihan.push({ label: labelEl.value.trim(), skor: parseFloat(skorEl?.value) || 0 });
-            }
-        });
-
-        // --- VALIDASI MANUAL CLIENT-SIDE ---
-        var hasError = false;
-        ['epugErrIndikator_id', 'epugErrKode', 'epugErrPertanyaan', 'epugErrSkor_maksimal', 'epugErrPilihan_jawaban'].forEach(function (id) { showFieldError(id, ''); });
-
-        if (!indikatorId) { showFieldError('epugErrIndikator_id', 'Indikator wajib dipilih.'); hasError = true; }
-        if (!kode) { showFieldError('epugErrKode', 'Kode wajib diisi.'); hasError = true; }
-        if (!pertanyaan) { showFieldError('epugErrPertanyaan', 'Pertanyaan wajib diisi.'); hasError = true; }
-        if (!skorMaks || skorMaks < 0 || skorMaks > 100) {
-            showFieldError('epugErrSkor_maksimal', 'Skor maksimal wajib diisi (0 - 100).'); hasError = true;
-        }
-        if (pilihan.length === 0) {
-            showFieldError('epugErrPilihan_jawaban', 'Minimal harus ada 1 pilihan jawaban.'); hasError = true;
-        } else {
-            // Cek apakah ada skor pilihan yang melebihi skor maksimal
-            var skorBerlebih = false;
-            pilihan.forEach(function (p) { if (p.skor > parseFloat(skorMaks)) skorBerlebih = true; });
-            if (skorBerlebih) {
-                showFieldError('epugErrPilihan_jawaban', 'Skor pilihan jawaban tidak boleh melebihi Skor Maksimal!');
-                hasError = true;
-            }
-        }
-        if (pilihan.length === 0) {
-            showFieldError('epugErrPilihan_jawaban', 'Minimal harus ada 1 pilihan jawaban.'); hasError = true;
-        } else {
-            var skorBerlebih = false;
-            pilihan.forEach(function (p) { if (p.skor > parseFloat(skorMaks)) skorBerlebih = true; });
-            if (skorBerlebih) {
-                showFieldError('epugErrPilihan_jawaban', 'Skor pilihan jawaban tidak boleh melebihi Skor Maksimal!');
-                hasError = true;
-            }
-        }
-
-        if (hasError) return; // Hentikan proses jika ada error
-
-        var simpanBtn = document.getElementById('epugBtnSimpanPertanyaan');
-        if (simpanBtn) { simpanBtn.disabled = true; simpanBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...'; }
-
-        var isEdit = _state.editPertId ? true : false;
-        var url = isEdit ? _cfg.routes.updatePert + _state.editPertId : _cfg.routes.tambah;
-        var method = isEdit ? 'PUT' : 'POST';
-
-        apiFetch(url, {
-            method: method,
-            body: JSON.stringify({ indikator_id: indikatorId, kode: kode, pertanyaan: pertanyaan, skor_maksimal: skorMaks, pilihan_jawaban: pilihan, petunjuk: petunjuk }),
-        })
-            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d, status: r.status }; }); })
-            .then(function (res) {
-                if (res.ok && res.data.success) {
-                    Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1500, showConfirmButton: false });
-                    closeModal('epugModalTambah');
-                    if (typeof loadPage === 'function') loadPage('evaluasi-pug?tahun=' + (_state.tahun || new Date().getFullYear()));
-                } else if (res.status === 422) {
-                    // Validasi dari server (Laravel)
-                    var errs = res.data.errors || {};
-                    Object.keys(errs).forEach(function (f) {
-                        showFieldError('epugErr' + f.charAt(0).toUpperCase() + f.slice(1), errs[f][0]);
-                    });
-                } else {
-                    Swal.fire('Gagal', res.data.message || 'Terjadi kesalahan.', 'error');
-                }
-            })
-            .catch(function () { Swal.fire('Error', 'Koneksi bermasalah.', 'error'); })
-            .finally(function () {
-                if (simpanBtn) { simpanBtn.disabled = false; simpanBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan'; }
-            });
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       REFRESH ROW SETELAH SAVE (Update status badge tanpa reload)
+       REFRESH ROW (USER)
        ══════════════════════════════════════════════════════════════════ */
     function refreshRow(pertanyaanId) {
         var row = document.querySelector('.epug-pertanyaan-row[data-id="' + pertanyaanId + '"]');
@@ -785,34 +592,24 @@ var EvaluasiPUG = (function () {
     }
 
     /* ══════════════════════════════════════════════════════════════════
-       EVENT BINDING (menggunakan delegation dari #main-content)
+       EVENT BINDING (USER)
        ══════════════════════════════════════════════════════════════════ */
     function bindEvents() {
-        var mc = document.getElementById('main-content');
-        if (!mc) return;
+        var mc = document.getElementById('main-content') || document.body;
 
-        /* SINGLE listener on #main-content untuk semua event */
+        /* SINGLE listener on #main-content untuk klik */
         mc.addEventListener('click', function (e) {
-
-            /* Tombol Lihat pertanyaan */
             if (e.target.closest('.epug-btn-lihat-trigger')) {
                 var btn = e.target.closest('.epug-btn-lihat-trigger');
                 openDetailModal(btn.dataset.pertId, btn.dataset.tahun);
                 return;
             }
 
-            /* ✅ BERSIHKAN PILIHAN JAWABAN */
             if (e.target.closest('#epugBtnClearPilihan')) {
                 document.querySelectorAll('.epug-pilihan-option').forEach(function (d) {
                     d.classList.remove('selected');
                     var radio = d.querySelector('input[type="radio"]');
                     if (radio) radio.checked = false;
-                    var sub = d.querySelector('.epug-sub-pilihan');
-                    if (sub) {
-                        sub.style.display = 'none';
-                        sub.querySelectorAll('.epug-sub-option').forEach(function (sd) { sd.classList.remove('selected'); });
-                        sub.querySelectorAll('input[type="radio"]').forEach(function (sr) { sr.checked = false; });
-                    }
                 });
                 _state.pilihanKode = null;
                 _state.pilihanLabel = null;
@@ -820,29 +617,16 @@ var EvaluasiPUG = (function () {
                 return;
             }
 
-            /* Tutup modal utama */
             if (e.target.closest('#epugModalClose') || e.target.closest('#epugBtnTutup') || e.target.id === 'epugModal') {
                 closeModal('epugModal');
                 return;
             }
 
-            /* Tutup modal tambah */
-            if (e.target.closest('#epugModalTambahClose') || e.target.closest('#epugModalTambahCancel') || e.target.id === 'epugModalTambah') {
-                closeModal('epugModalTambah');
-                return;
-            }
-
-            /* Simpan Jawaban */
             if (e.target.closest('#epugBtnSimpan')) {
                 validateAndSave();
                 return;
             }
 
-            /* Verifikasi Admin */
-            if (e.target.closest('#epugBtnSetujui')) { submitVerifikasi('disetujui'); return; }
-            if (e.target.closest('#epugBtnTolak')) { submitVerifikasi('ditolak'); return; }
-
-            /* Hapus lampiran */
             if (e.target.closest('.epug-lampiran-del')) {
                 var btnDel = e.target.closest('.epug-lampiran-del');
                 var lid = btnDel.dataset.lampiranId;
@@ -861,7 +645,6 @@ var EvaluasiPUG = (function () {
                 return;
             }
 
-            /* Audit log toggle */
             if (e.target.closest('#epugAuditToggle')) {
                 var body = document.getElementById('epugAuditBody');
                 var chevron = document.getElementById('epugAuditChevron');
@@ -869,192 +652,40 @@ var EvaluasiPUG = (function () {
                 if (chevron) chevron.style.transform = body?.style.display === 'none' ? '' : 'rotate(180deg)';
                 return;
             }
-
-            if (e.target.closest('.epug-btn-edit-pert')) {
-                var btn = e.target.closest('.epug-btn-edit-pert');
-                _state.editPertId = btn.dataset.id;
-
-                document.querySelector('#epugModalTambah .epug-modal-title').textContent = "Edit Pertanyaan";
-                document.getElementById('epugTambahIndikator').value = btn.dataset.indikator;
-                document.getElementById('epugTambahKode').value = btn.dataset.kode;
-                document.getElementById('epugTambahPertanyaan').value = btn.dataset.pertanyaan;
-                document.getElementById('epugTambahSkorMaks').value = btn.dataset.skor;
-                document.getElementById('epugTambahPetunjuk').value = btn.dataset.petunjuk;
-
-                var pilihan = [];
-                try {
-                    // Trik decoding agar tanda kutip JSON tidak hilang
-                    var decodedJson = btn.dataset.pilihan.replace(/&quot;/g, '"');
-                    pilihan = JSON.parse(decodedJson || '[]');
-                } catch (err) { console.error("Gagal memuat pilihan", err); }
-
-                var builder = document.getElementById('epugPilihanBuilder');
-                builder.innerHTML = '';
-
-                if (pilihan.length === 0) {
-                    builder.innerHTML = '<div class="epug-pilihan-item" style="display:flex; gap:8px; margin-bottom:6px;"><input type="text" class="epug-input epug-pilihan-label" placeholder="Label jawaban" maxlength="200"><input type="number" class="epug-input epug-pilihan-skor" placeholder="Skor" min="0" max="1000" step="0.01" style="width:100px;"><button type="button" class="epug-btn-icon epug-btn-del-pilihan" style="color:#ef4444;"><i class="fa-solid fa-trash-can"></i></button></div>';
-                } else {
-                    pilihan.forEach(function (pil) {
-                        var div = document.createElement('div');
-                        div.className = 'epug-pilihan-item';
-                        div.style.cssText = 'display:flex; gap:8px; margin-bottom:6px;';
-                        div.innerHTML = '<input type="text" class="epug-input epug-pilihan-label" value="' + escHtml(pil.label) + '" placeholder="Label jawaban" maxlength="200">'
-                            + '<input type="number" class="epug-input epug-pilihan-skor" value="' + pil.skor + '" placeholder="Skor" min="0" max="1000" step="0.01" style="width:100px;">'
-                            + '<button type="button" class="epug-btn-icon epug-btn-del-pilihan" style="color:#ef4444;"><i class="fa-solid fa-trash-can"></i></button>';
-                        builder.appendChild(div);
-                    });
-                }
-
-                clearFieldErrors();
-                openModal('epugModalTambah');
-                return;
-            }
-
-            if (e.target.closest('.epug-btn-del-pert')) {
-                var btnDelPert = e.target.closest('.epug-btn-del-pert');
-                var pid = btnDelPert.dataset.id;
-                Swal.fire({
-                    title: 'Hapus Pertanyaan?',
-                    text: 'Pertanyaan beserta seluruh jawaban SKPD (jika ada) akan dihapus secara permanen!',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444',
-                    confirmButtonText: 'Ya, Hapus Permanen',
-                    cancelButtonText: 'Batal'
-                }).then(function (r) {
-                    if (r.isConfirmed) {
-                        apiFetch(_cfg.routes.deletePert + pid, { method: 'DELETE' })
-                            .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d, status: res.status }; }); })
-                            .then(function (res) {
-                                if (res.ok && res.data.success) {
-                                    Swal.fire('Terhapus!', 'Pertanyaan berhasil dihapus.', 'success');
-                                    btnDelPert.closest('.epug-pertanyaan-row').remove();
-                                } else {
-                                    Swal.fire('Gagal', res.data.message || 'Gagal menghapus pertanyaan.', 'error');
-                                }
-                            })
-                            .catch(function () { Swal.fire('Error', 'Koneksi bermasalah.', 'error'); });
-                    }
-                });
-                return;
-            }
-
-            /* Buka modal tambah pertanyaan (Reset Form) */
-            if (e.target.closest('#epugBtnTambahPertanyaan')) {
-                _state.editPertId = null;
-                document.querySelector('#epugModalTambah .epug-modal-title').textContent = "Tambah Pertanyaan";
-
-                document.getElementById('epugTambahIndikator').value = '';
-                document.getElementById('epugTambahKode').value = '';
-                document.getElementById('epugTambahPertanyaan').value = '';
-                document.getElementById('epugTambahSkorMaks').value = '';
-                document.getElementById('epugTambahPetunjuk').value = '';
-                // Desain pilihan jawaban dengan tombol hapus
-                document.getElementById('epugPilihanBuilder').innerHTML = '<div class="epug-pilihan-item" style="display:flex; gap:8px; margin-bottom:6px;"><input type="text" class="epug-input epug-pilihan-label" placeholder="Label jawaban" maxlength="200"><input type="number" class="epug-input epug-pilihan-skor" placeholder="Skor" min="0" max="1000" step="0.01" style="width:100px;"><button type="button" class="epug-btn-icon epug-btn-del-pilihan" style="color:#ef4444;"><i class="fa-solid fa-trash-can"></i></button></div>';
-
-                clearFieldErrors();
-                openModal('epugModalTambah');
-                return;
-            }
-
-            /* Simpan pertanyaan baru */
-            if (e.target.closest('#epugBtnSimpanPertanyaan')) {
-                simpanPertanyaanBaru();
-                return;
-            }
-
-            /* Tambah pilihan builder */
-            if (e.target.closest('#epugBtnAddPilihan')) {
-                var builder = document.getElementById('epugPilihanBuilder');
-                if (builder.children.length >= 10) { // Batas maksimal 10 pilihan
-                    Swal.fire('Batas Maksimal', 'Maksimal 10 pilihan jawaban.', 'warning');
-                    return;
-                }
-                var newItem = document.createElement('div');
-                newItem.className = 'epug-pilihan-item';
-                newItem.style.cssText = 'display:flex; gap:8px; margin-bottom:6px;';
-                newItem.innerHTML = '<input type="text" class="epug-input epug-pilihan-label" placeholder="Label jawaban" maxlength="200">'
-                    + '<input type="number" class="epug-input epug-pilihan-skor" placeholder="Skor" min="0" max="1000" step="0.01" style="width:100px;">'
-                    + '<button type="button" class="epug-btn-icon epug-btn-del-pilihan" style="color:#ef4444;"><i class="fa-solid fa-trash-can"></i></button>';
-                builder.appendChild(newItem);
-                return;
-            }
-
-            /* ✅ HAPUS PILIHAN JAWABAN */
-            if (e.target.closest('.epug-btn-del-pilihan')) {
-                var builder = document.getElementById('epugPilihanBuilder');
-                if (builder.children.length <= 1) {
-                    Swal.fire('Perhatian', 'Minimal harus ada 1 pilihan jawaban.', 'warning');
-                    return;
-                }
-                e.target.closest('.epug-pilihan-item').remove();
-                return;
-            }
         });
 
-        /* Klik luar modal */
-        window.addEventListener('click', function (e) {
-            if (e.target.id === 'epugModal') closeModal('epugModal');
-            if (e.target.id === 'epugModalTambah') closeModal('epugModalTambah');
-        });
-
-        /* EVENT INPUT GLOBAL (Catatan, Validasi Angka, & Skor) */
+        /* Catatan counter */
         mc.addEventListener('input', function (e) {
-            // Catatan counter
             if (e.target.id === 'epugCatatan') updateCatatanCounter();
-
-            if (e.target.id === 'epugTambahKode') {
-                e.target.value = e.target.value.replace(/[^0-9.]/g, '');
-            }
-            if (e.target.id === 'epugTambahSkorMaks') {
-                let val = parseFloat(e.target.value);
-                if (val > 100) {
-                    e.target.value = 100;
-                    val = 100;
-                }
-
-                if (!isNaN(val)) {
-                    document.querySelectorAll('.epug-pilihan-skor').forEach(function (input) {
-                        if (parseFloat(input.value) > val) {
-                            input.value = val;
-                        }
-                    });
-                }
-            }
-
-            if (e.target.classList.contains('epug-pilihan-skor')) {
-                let val = parseFloat(e.target.value);
-                let maxSkor = parseFloat(document.getElementById('epugTambahSkorMaks').value) || 100;
-
-                if (val > maxSkor) {
-                    e.target.value = maxSkor;
-                }
-            }
         });
 
-        /* File input */
+        /* File input & dropdown tahun */
         mc.addEventListener('change', function (e) {
             if (e.target.id === 'epugFileInput') {
-                var files = e.target.files; // ✅ Tangkap semua file
+                var files = e.target.files;
                 if (files && files.length > 0) handleFileUpload(files);
-                e.target.value = ''; // Reset input agar bisa upload file yg sama lagi
+                e.target.value = '';
             }
             if (e.target.id === 'epugTahunSelect') {
-                if (typeof loadPage === 'function') loadPage('evaluasi-pug?tahun=' + e.target.value);
+                // Di SPA User, redirect sesuai URL filter tahun
+                window.location.href = '/user/evaluasi-pug?tahun=' + e.target.value;
             }
         });
 
-        /* Escape key */
+        /* Klik di luar modal dan Escape Key */
+        window.addEventListener('click', function (e) {
+            if (e.target.id === 'epugModal') closeModal('epugModal');
+        });
+
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 closeModal('epugModal');
-                closeModal('epugModalTambah');
             }
         });
     }
 
     /* ══════════════════════════════════════════════════════════════════
-       EXPORT
+       EXPORT (USER)
        ══════════════════════════════════════════════════════════════════ */
     function bindExport(container) {
         container.querySelector('#epugBtnExportExcel')?.addEventListener('click', function () {
@@ -1080,7 +711,6 @@ var EvaluasiPUG = (function () {
         var dataEl = document.getElementById('epugChartData');
         if (!chartEl || !dataEl) return;
 
-        // Bersihkan grafik lama jika ada
         chartEl.innerHTML = '';
 
         try {
@@ -1120,17 +750,13 @@ var EvaluasiPUG = (function () {
        ══════════════════════════════════════════════════════════════════ */
     function init(config) {
         _cfg = config || {};
-
         _cfg.routes = _cfg.routes || {};
-        _cfg.routes.updatePert = _cfg.routes.updatePert || '/admin/evaluasi-pug/pertanyaan/';
-        _cfg.routes.deletePert = _cfg.routes.deletePert || '/admin/evaluasi-pug/pertanyaan/';
 
         var container = document.querySelector('.epug-wrap');
         if (!container) return;
 
         bindTreeToggle(container);
-        // bindTabs(container); // ✅ DIHAPUS (Karena tab sudah dihilangkan)
-        bindSearch();           // ✅ DITAMBAHKAN (Mengaktifkan Search Bar)
+        bindSearch();
         bindExport(container);
         renderChart();
 
@@ -1139,7 +765,7 @@ var EvaluasiPUG = (function () {
             _initialized = true;
         }
 
-        console.log('[EvaluasiPUG] Modul diinisialisasi. Tahun:', _cfg.tahun);
+        console.log('[UserEvaluasiPUG] Modul User diinisialisasi. Tahun:', _cfg.tahun);
     }
 
     return { init: init };

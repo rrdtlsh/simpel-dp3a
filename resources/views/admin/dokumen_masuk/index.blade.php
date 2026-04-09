@@ -66,7 +66,7 @@
                 <tr class="row-data" 
                     data-row-id="{{ $row->id }}"
                     data-judul="{{ strtolower($row->judul) }}"
-                    data-bidang="{{ $row->bidang->nama ?? '-' }}"
+                    data-bidang="{{ strtolower($row->bidang->nama ?? '-') }}"
                     data-tahun="{{ $row->tahun }}">
                     
                     <td style="text-align:center; font-weight:700;">{{ $index + 1 }}</td>
@@ -92,9 +92,18 @@
                 </tr>
                 @empty
                 <tr class="arsip-empty-row">
-                    <td colspan="6">Belum ada arsip dokumen yang diterima.</td>
+                    <td colspan="6" style="text-align:center; padding: 20px; color: #6b7280;">Belum ada arsip dokumen yang diterima.</td>
                 </tr>
                 @endforelse
+
+                {{-- ✅ PESAN JIKA SEARCH KOSONG (Disembunyikan default) --}}
+                <tr id="arsipSearchEmpty" style="display:none;">
+                    <td colspan="6" style="text-align: center; padding: 40px 20px; background: #fff;">
+                        <i class="fa-solid fa-magnifying-glass" style="font-size:3rem; color:#d1d5db; margin-bottom: 12px; display:block;"></i>
+                        <h4 style="margin: 0 0 6px 0; color: #374151; font-size: 1.1rem;">Hasil Pencarian Tidak Ditemukan</h4>
+                        <p style="margin: 0; color: #9ca3af; font-size: 0.85rem;">Coba gunakan kata kunci pencarian yang lain.</p>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>

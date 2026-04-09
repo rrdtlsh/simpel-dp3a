@@ -28,10 +28,13 @@
     {{-- Konten Utama Halaman --}}
     @yield('content')
 
-    {{-- Script Utama Admin (Sekarang loader berjalan dari file ini) --}}
-    <script src="{{ asset('js/dashboardadmin.js') }}"></script>
+    {{-- Script Utama Admin --}}
+    <script src="{{ asset('js/dashboardadmin.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/dokumen_masuk.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/permintaan.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/verifikasi.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/evaluasi_pug.js') }}?v={{ time() }}"></script>
 
-    {{-- Tempat untuk menyisipkan JS khusus dari halaman lain --}}
     @stack('scripts')
     
 </body>

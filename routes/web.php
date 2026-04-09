@@ -76,6 +76,18 @@ Route::middleware('auth')->group(function () {
         Route::get('/arsip', [PengajuanController::class, 'userArsip'])->name('arsip');
         Route::get('/export/pdf', [PengajuanController::class, 'exportPdfUser'])->name('export.pdf');
         Route::get('/export/excel', [PengajuanController::class, 'exportExcelUser'])->name('export.excel');
+
+        Route::prefix('evaluasi-pug')->name('evaluasi-pug.')->group(function () {
+            // Kita akan buat UserEvaluasiPugController setelah ini
+            Route::get('/', [\App\Http\Controllers\UserEvaluasiPugController::class, 'index'])->name('index');
+            Route::get('/pertanyaan/{id}', [\App\Http\Controllers\UserEvaluasiPugController::class, 'show'])->name('show');
+            Route::post('/jawaban', [\App\Http\Controllers\UserEvaluasiPugController::class, 'simpanJawaban'])->name('jawaban.simpan');
+            Route::post('/lampiran', [\App\Http\Controllers\UserEvaluasiPugController::class, 'uploadLampiran'])->name('lampiran.upload');
+            Route::delete('/lampiran/{id}', [\App\Http\Controllers\UserEvaluasiPugController::class, 'hapusLampiran'])->name('lampiran.hapus');
+
+            Route::get('/export/excel', [\App\Http\Controllers\UserEvaluasiPugController::class, 'exportExcel'])->name('export.excel');
+            Route::get('/export/pdf', [\App\Http\Controllers\UserEvaluasiPugController::class, 'exportPdf'])->name('export.pdf');
+        });
     });
 
     Route::post('/pengajuan/{id}/upload', [PengajuanController::class, 'upload'])->name('pengajuan.upload');

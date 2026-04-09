@@ -13,18 +13,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Barryvdh\DomPDF\Facade\Pdf;
-use App\Exports\DataExport;
-use Maatwebsite\Excel\Facades\Excel;
 
-class EvaluasiPugController extends Controller
+class UserEvaluasiPugController extends Controller
 {
     // ──────────────────────────────────────────────────────────────────
-    // SPA CONTENT ENDPOINT (INDEX)
+    // TAMPILAN HALAMAN UTAMA EVALUASI PUG (USER)
     // ──────────────────────────────────────────────────────────────────
     public function index(Request $request)
     {
-        // Pastikan tahun dikonversi menjadi integer agar filter database akurat
         $tahun = (int) $request->get('tahun', date('Y'));
 
         $komponen = PugKomponen::with([
@@ -33,7 +29,6 @@ class EvaluasiPugController extends Controller
             }
         ])->where('aktif', true)->orderBy('urutan')->get();
 
-        // Variabel untuk menyimpan kalkulasi Total Skor & Grafik
         $totalSkor = 0;
         $totalMaks = 0;
         $chartData = [
@@ -47,7 +42,6 @@ class EvaluasiPugController extends Controller
                 foreach ($indk->pertanyaan as $pert) {
                     $totalMaks += $pert->skor_maksimal;
 
-                    // Filter ulang secara ketat berdasarkan tahun
                     $jwb = $pert->jawaban->where('tahun', $tahun)->first();
                     if ($jwb && in_array($jwb->status, ['diisi', 'disetujui'])) {
                         $skorKomp += $jwb->skor;
@@ -55,14 +49,14 @@ class EvaluasiPugController extends Controller
                     }
                 }
             }
-            // Masukkan data per komponen ke grafik (Misal: "A", "B", dll)
             $chartData['categories'][] = 'Komp ' . $komp->kode;
             $chartData['series'][]     = round($skorKomp, 2);
         }
 
         $persenTotal = $totalMaks > 0 ? round(($totalSkor / $totalMaks) * 100, 1) : 0;
 
-        return view('admin.evaluasi_pug.index', compact(
+        // ✅ Arahkan ke view khusus User
+        return view('user.evaluasi_pug.index', compact(
             'komponen',
             'tahun',
             'totalSkor',
@@ -73,8 +67,7 @@ class EvaluasiPugController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────────
-    // DETAIL PERTANYAAN (untuk modal)
-    // GET /admin/evaluasi-pug/pertanyaan/{id}?tahun=2025
+    // AMBIL DETAIL PERTANYAAN VIA AJAX
     // ──────────────────────────────────────────────────────────────────
     public function show(Request $request, $id)
     {
@@ -103,15 +96,15 @@ class EvaluasiPugController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────────
-    // SIMPAN JAWABAN
+    // SIMPAN JAWABAN (USER)
     // ──────────────────────────────────────────────────────────────────
     public function simpanJawaban(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'pertanyaan_id' => 'required|exists:pug_pertanyaan,id',
             'tahun'         => 'required|integer|min:2020|max:2030',
-            'jawaban_kode'  => 'nullable|string|max:100',  // ✅ Boleh Kosong
-            'jawaban_label' => 'nullable|string|max:500',  // ✅ Boleh Kosong
+            'jawaban_kode'  => 'nullable|string|max:100',
+            'jawaban_label' => 'nullable|string|max:500',
             'catatan'       => 'nullable|string|max:1000|regex:/^[^<>{}\[\]\\\\]*$/',
             'skor'          => 'nullable|numeric|min:0',
         ]);
@@ -133,7 +126,6 @@ class EvaluasiPugController extends Controller
             $sebelum = $jawaban->exists ? $jawaban->toArray() : null;
             $isNew = !$jawaban->exists;
 
-            // ✅ JIKA JAWABAN KOSONG, KEMBALIKAN STATUS KE 'belum'
             $statusBaru = empty($request->jawaban_kode) ? 'belum' : 'diisi';
 
             $jawaban->fill([
@@ -141,7 +133,7 @@ class EvaluasiPugController extends Controller
                 'jawaban_label' => $request->jawaban_label,
                 'catatan'       => $request->catatan,
                 'skor'          => $request->skor ?? 0,
-                'status'        => $statusBaru, // ✅ Simpan status dinamis
+                'status'        => $statusBaru,
                 'diisi_oleh'    => Auth::id(),
             ])->save();
 
@@ -162,7 +154,7 @@ class EvaluasiPugController extends Controller
                 'user_id'    => Auth::id(),
                 'aksi'       => $isNew ? 'isi_jawaban' : 'ubah_jawaban',
                 'sebelum'    => $sebelum,
-                'sesudah'    => $jawaban->toArray(),
+                'sesudah'    => $jawaban->fresh()->toArray(),
                 'ip_address' => request()->ip(),
             ]);
         });
@@ -171,14 +163,14 @@ class EvaluasiPugController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────────
-    // UPLOAD LAMPIRAN
+    // UPLOAD LAMPIRAN JAWABAN (USER)
     // ──────────────────────────────────────────────────────────────────
     public function uploadLampiran(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'pertanyaan_id' => 'required|exists:pug_pertanyaan,id',
             'tahun'         => 'required|integer',
-            'file'          => 'required|array|max:10', // ✅ Maksimal 10 file per kirim
+            'file'          => 'required|array|max:10',
             'file.*'        => 'required|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
         ], [
             'file.*.max'   => 'Masing-masing file maksimal 10 MB.',
@@ -196,13 +188,12 @@ class EvaluasiPugController extends Controller
         ]);
 
         if ($jawaban->status === 'disetujui') {
-            return response()->json(['success' => false, 'message' => 'Tidak dapat mengubah jawaban yang sudah disetujui.'], 403);
+            return response()->json(['success' => false, 'message' => 'Tidak dapat merubah lampiran jawaban yang sudah disetujui.'], 403);
         }
 
         $jumlahLampiranSaatIni = PugJawabanLampiran::where('jawaban_id', $jawaban->id)->count();
         $jumlahUpload = count($request->file('file'));
 
-        // ✅ Validasi jika total file yg ada + file yg baru diupload > 10
         if ($jumlahLampiranSaatIni + $jumlahUpload > 10) {
             return response()->json([
                 'success' => false,
@@ -230,20 +221,19 @@ class EvaluasiPugController extends Controller
 
         return response()->json([
             'success'    => true,
-            'lampirans'  => $lampirans, // ✅ Kirim balik semua file yg diupload
+            'lampirans'  => $lampirans,
             'jawaban_id' => $jawaban->id
         ]);
     }
 
     // ──────────────────────────────────────────────────────────────────
-    // HAPUS LAMPIRAN
-    // DELETE /admin/evaluasi-pug/lampiran/{id}
+    // HAPUS LAMPIRAN (USER)
     // ──────────────────────────────────────────────────────────────────
     public function hapusLampiran($id)
     {
         $lampiran = PugJawabanLampiran::findOrFail($id);
         if ($lampiran->jawaban->status === 'disetujui') {
-            return response()->json(['success' => false, 'message' => 'Tidak dapat mengubah jawaban yang disetujui.'], 403);
+            return response()->json(['success' => false, 'message' => 'Tidak dapat menghapus file pada jawaban yang disetujui.'], 403);
         }
         if (Storage::disk('public')->exists($lampiran->path_file)) {
             Storage::disk('public')->delete($lampiran->path_file);
@@ -253,142 +243,12 @@ class EvaluasiPugController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────────
-    // ADMIN: VERIFIKASI (SETUJUI / TOLAK)
-    // POST /admin/evaluasi-pug/verifikasi
-    // ──────────────────────────────────────────────────────────────────
-    public function verifikasi(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'jawaban_id'     => 'required|exists:pug_jawaban,id',
-            'aksi'           => 'required|in:disetujui,ditolak',
-            'catatan_admin'  => 'required|string|min:5|max:1000',
-        ], [
-            'catatan_admin.required' => 'Catatan admin wajib diisi saat menyetujui/menolak.',
-            'catatan_admin.min'      => 'Catatan minimal 5 karakter.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
-        }
-
-        $jawaban = PugJawaban::findOrFail($request->jawaban_id);
-        $sebelum = $jawaban->toArray();
-
-        $jawaban->update([
-            'status'               => $request->aksi,
-            'catatan_admin'        => $request->catatan_admin,
-            'diverifikasi_oleh'    => Auth::id(),
-            'diverifikasi_at'      => now(),
-        ]);
-
-        PugAuditLog::create([
-            'jawaban_id' => $jawaban->id,
-            'user_id'    => Auth::id(),
-            'aksi'       => $request->aksi === 'disetujui' ? 'setujui' : 'tolak',
-            'sebelum'    => $sebelum,
-            'sesudah'    => $jawaban->fresh()->toArray(),
-            'ip_address' => request()->ip(),
-        ]);
-
-        return response()->json(['success' => true, 'message' => 'Verifikasi berhasil.']);
-    }
-
-    // ──────────────────────────────────────────────────────────────────
-    // TAMBAH PERTANYAAN (ADMIN)
-    // POST /admin/evaluasi-pug/pertanyaan
-    // ──────────────────────────────────────────────────────────────────
-    public function tambahPertanyaan(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'indikator_id'    => 'required|exists:pug_indikator,id',
-            'kode'            => 'required|string|max:20|regex:/^[0-9.]+$/',
-            'pertanyaan'      => 'required|string|max:100',
-            'skor_maksimal'   => 'required|numeric|min:0|max:100',
-            'pilihan_jawaban' => 'required|array|min:1',
-            'petunjuk'        => 'nullable|string|max:500',
-        ], [
-            'kode.regex' => 'Kode hanya boleh berisi angka dan titik (tanpa spasi, huruf, atau simbol lain).',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
-        }
-
-        $pertanyaan = PugPertanyaan::create([
-            'indikator_id'    => $request->indikator_id,
-            'kode'            => $request->kode,
-            'pertanyaan'      => $request->pertanyaan,
-            'skor_maksimal'   => $request->skor_maksimal,
-            'pilihan_jawaban' => $request->pilihan_jawaban,
-            'petunjuk'        => $request->petunjuk,
-            'urutan'          => PugPertanyaan::where('indikator_id', $request->indikator_id)->max('urutan') + 1,
-        ]);
-
-        return response()->json(['success' => true, 'pertanyaan' => $pertanyaan]);
-    }
-
-    // ──────────────────────────────────────────────────────────────────
-    // EDIT PERTANYAAN (ADMIN)
-    // ──────────────────────────────────────────────────────────────────
-    public function updatePertanyaan(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'indikator_id'    => 'required|exists:pug_indikator,id',
-            'kode'            => 'required|string|max:20|regex:/^[0-9.]+$/',
-            'pertanyaan'      => 'required|string|max:100',
-            'skor_maksimal'   => 'required|numeric|min:0|max:100',
-            'pilihan_jawaban' => 'required|array|min:1',
-            'petunjuk'        => 'nullable|string|max:500',
-        ], [
-            'kode.regex' => 'Kode hanya boleh berisi angka dan titik (tanpa spasi, huruf, atau simbol lain).',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
-        }
-
-        // ✅ ATURAN BARU: Tidak bisa edit jika ada jawaban yang Diterima atau Ditolak
-        $adaJawabanTerkunci = PugJawaban::where('pertanyaan_id', $id)
-            ->whereIn('status', ['disetujui', 'ditolak'])
-            ->exists();
-
-        if ($adaJawabanTerkunci) {
-            return response()->json(['success' => false, 'message' => 'Pertanyaan tidak dapat diedit karena sudah memiliki jawaban yang disetujui atau ditolak.'], 403);
-        }
-
-        $pertanyaan = PugPertanyaan::findOrFail($id);
-        $pertanyaan->update([
-            'indikator_id'    => $request->indikator_id,
-            'kode'            => $request->kode,
-            'pertanyaan'      => $request->pertanyaan,
-            'skor_maksimal'   => $request->skor_maksimal,
-            'pilihan_jawaban' => $request->pilihan_jawaban,
-            'petunjuk'        => $request->petunjuk,
-        ]);
-
-        return response()->json(['success' => true, 'pertanyaan' => $pertanyaan]);
-    }
-
-    // ──────────────────────────────────────────────────────────────────
-    // HAPUS PERTANYAAN (ADMIN)
-    // ──────────────────────────────────────────────────────────────────
-    public function hapusPertanyaan($id)
-    {
-        // ✅ ATURAN BARU: Selalu bisa dihapus apapun statusnya.
-        // Data jawaban otomatis akan ikut terhapus karena foreign key onDelete('cascade')
-        $pertanyaan = PugPertanyaan::findOrFail($id);
-        $pertanyaan->delete();
-        return response()->json(['success' => true]);
-    }
-
-    // ──────────────────────────────────────────────────────────────────
-    // EXPORT EXCEL
-    // GET /admin/evaluasi-pug/export/excel?tahun=2025
+    // EXPORT EXCEL (USER)
     // ──────────────────────────────────────────────────────────────────
     public function exportExcel(Request $request)
     {
         $tahun   = $request->get('tahun', date('Y'));
-        $komponen = PugKomponen::with([
+        $komponen = \App\Models\PugKomponen::with([
             'indikator.pertanyaan.jawaban' => fn($q) => $q->where('tahun', $tahun)->with('lampiran'),
         ])->where('aktif', true)->orderBy('urutan')->get();
 
@@ -409,30 +269,30 @@ class EvaluasiPugController extends Controller
                         $jwb?->catatan ?? '-',
                         $jwb?->diisiOleh?->name ?? '-',
                         $jwb?->created_at?->format('d/m/Y H:i') ?? '-',
-                        $jwb?->lampiran->count() . ' file',
+                        ($jwb?->lampiran ? $jwb->lampiran->count() : 0) . ' file',
                     ];
                 }
             }
         }
 
         $headings = ['Kode', 'Komponen', 'Indikator', 'Pertanyaan', 'Jawaban', 'Skor', 'Skor Maks', 'Status', 'Catatan', 'Diisi Oleh', 'Tanggal Isi', 'Lampiran'];
-        $fileName = 'hasil-input-evaluasi-mandiri-' . $tahun . '.xlsx'; // Ekstensi .xlsx murni
+        $fileName = 'evaluasi-mandiri-pug-' . $tahun . '.xlsx';
 
-        return Excel::download(new DataExport($data, $headings), $fileName);
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\DataExport($data, $headings), $fileName);
     }
 
     // ──────────────────────────────────────────────────────────────────
-    // EXPORT PDF
-    // GET /admin/evaluasi-pug/export/pdf?tahun=2025
+    // EXPORT PDF (USER)
     // ──────────────────────────────────────────────────────────────────
     public function exportPdf(Request $request)
     {
         $tahun   = $request->get('tahun', date('Y'));
-        $komponen = PugKomponen::with([
+        $komponen = \App\Models\PugKomponen::with([
             'indikator.pertanyaan.jawaban' => fn($q) => $q->where('tahun', $tahun)->with('lampiran'),
         ])->where('aktif', true)->orderBy('urutan')->get();
 
-        $pdf = Pdf::loadView('admin.evaluasi_pug.export_pdf', compact('komponen', 'tahun'))
+        // Gunakan view yang sama dengan admin agar seragam
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.evaluasi_pug.export_pdf', compact('komponen', 'tahun'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('evaluasi-pug-' . $tahun . '.pdf');

@@ -28,6 +28,12 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
+
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    /* Pastikan selalu berada paling atas */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .header-left {
@@ -85,7 +91,7 @@ body {
 .wrapper {
     display: flex;
     width: 100%;
-    overflow-x: hidden;
+    align-items: flex-start;
 }
 
 /* ===== SIDEBAR ===== */
@@ -93,8 +99,29 @@ body {
     width: 240px;
     background: var(--putih);
     border-right: 1px solid var(--abu-border);
-    min-height: calc(100vh - 64px);
     transition: all 0.3s ease;
+
+    /* ✅ KUNCI STICKY SIDEBAR */
+    flex-shrink: 0;
+    height: calc(100vh - 64px);
+    position: sticky;
+    top: 64px;
+    overflow-y: auto;
+    z-index: 998;
+    /* Pastikan berada di atas konten tapi di bawah header */
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #cdd5df;
+    border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .sidebar.hide {
