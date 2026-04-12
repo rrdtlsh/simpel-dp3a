@@ -1,0 +1,624 @@
+/**
+ * FILE: public/css/admin/pengumuman.css
+ *
+ * CSS khusus halaman Kelola Pengumuman.
+ * Di-load hanya saat partial SPA pengumuman aktif (di-inject via <link> di Blade).
+ */
+
+/* ══════════════════════════════════════════════════════════════
+   1. HEADER & TOMBOL TAMBAH
+   ══════════════════════════════════════════════════════════════ */
+.pgm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.pgm-title {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pgm-title i {
+    color: #6366f1;
+    font-size: 1.1rem;
+}
+
+/* Tombol Tambah Pengumuman */
+.pgm-btn-tambah {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: .875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s ease;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, .35);
+}
+
+.pgm-btn-tambah:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(99, 102, 241, .45);
+}
+
+.pgm-btn-tambah:active {
+    transform: translateY(0);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   2. TABEL
+   ══════════════════════════════════════════════════════════════ */
+.pgm-table-wrapper {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, .06);
+}
+
+.pgm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Poppins', sans-serif;
+    font-size: .85rem;
+    table-layout: fixed;
+    /* ✅ KUNCI 1: Kunci lebar tabel agar tidak melar */
+}
+
+/* Atur proporsi lebar kolom agar pas */
+.pgm-table th:nth-child(1) {
+    width: 5%;
+}
+
+.pgm-table th:nth-child(2) {
+    width: 35%;
+}
+
+.pgm-table th:nth-child(3) {
+    width: 15%;
+}
+
+.pgm-table th:nth-child(4) {
+    width: 15%;
+}
+
+.pgm-table th:nth-child(5) {
+    width: 15%;
+}
+
+.pgm-table th:nth-child(6) {
+    width: 15%;
+}
+
+.pgm-table thead tr {
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.pgm-table thead th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: .75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    white-space: nowrap;
+}
+
+.pgm-table thead th.center {
+    text-align: center;
+}
+
+.pgm-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .15s;
+}
+
+.pgm-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.pgm-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.pgm-table td {
+    padding: 14px 16px;
+    vertical-align: middle;
+    color: #334155;
+    word-wrap: break-word;
+    /* ✅ KUNCI 2: Turunkan kata ke bawah */
+    overflow-wrap: anywhere;
+    /* ✅ KUNCI 3: Potong teks tanpa spasi */
+}
+
+.pgm-table td.center {
+    text-align: center;
+}
+
+/* Kolom judul */
+.pgm-td-judul {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: .875rem;
+}
+
+.pgm-td-konten-hint {
+    font-size: .72rem;
+    color: #94a3b8;
+    margin-top: 3px;
+}
+
+
+/* Kolom nomor */
+.pgm-td-no {
+    text-align: center;
+    font-weight: 700;
+    color: #64748b;
+    font-size: .8rem;
+    width: 48px;
+}
+
+/* Kolom tanggal */
+.pgm-td-date {
+    font-size: .78rem;
+    color: #94a3b8;
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* Empty state */
+.pgm-empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: #94a3b8;
+}
+
+.pgm-empty i {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 12px;
+    opacity: .5;
+}
+
+.pgm-empty p {
+    font-size: .875rem;
+    margin: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   3. BADGE — WARNA & STATUS
+   ══════════════════════════════════════════════════════════════ */
+.pgm-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: .72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.pgm-badge.red {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.pgm-badge.blue {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.pgm-badge.green {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.pgm-badge-aktif {
+    background: #dcfce7;
+    color: #16a34a;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.pgm-badge-nonaktif {
+    background: #f1f5f9;
+    color: #64748b;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+/* Tombol toggle status */
+.pgm-btn-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity .15s;
+}
+
+.pgm-btn-toggle:hover {
+    opacity: .75;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   4. TOMBOL AKSI (Edit / Hapus)
+   ══════════════════════════════════════════════════════════════ */
+.pgm-action-group {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+.pgm-btn-icon {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .85rem;
+    transition: all .2s ease;
+    outline: none;
+}
+
+.pgm-btn-edit {
+    background: #eef2ff;
+    color: #4f46e5;
+}
+
+.pgm-btn-hapus {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.pgm-btn-icon:hover {
+    filter: brightness(.92);
+    transform: scale(1.08);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   5. MODAL OVERLAY & CARD
+   ══════════════════════════════════════════════════════════════ */
+.pgm-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .55);
+    backdrop-filter: blur(3px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: pgmFadeIn .2s ease;
+}
+
+.pgm-modal-overlay.open {
+    display: flex;
+}
+
+@keyframes pgmFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.pgm-modal-card {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
+    animation: pgmSlideUp .25s ease;
+}
+
+@keyframes pgmSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header modal */
+.pgm-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.pgm-modal-header h3 {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pgm-modal-header h3 i {
+    color: #6366f1;
+}
+
+.pgm-modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+    flex-shrink: 0;
+}
+
+.pgm-modal-close:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Body modal */
+.pgm-modal-body {
+    padding: 20px 24px;
+}
+
+/* Footer modal */
+.pgm-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px 20px;
+    border-top: 1px solid #f1f5f9;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   6. FORM INPUT DALAM MODAL
+   ══════════════════════════════════════════════════════════════ */
+.pgm-form-group {
+    margin-bottom: 16px;
+}
+
+.pgm-form-group label {
+    display: block;
+    font-family: 'Poppins', sans-serif;
+    font-size: .8rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.pgm-form-group label .req {
+    color: #dc2626;
+}
+
+.pgm-input,
+.pgm-textarea,
+.pgm-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 9px;
+    font-family: 'Poppins', sans-serif;
+    font-size: .875rem;
+    color: #1e293b;
+    background: #fff;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.pgm-input:focus,
+.pgm-textarea:focus,
+.pgm-select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, .15);
+}
+
+.pgm-input.is-invalid,
+.pgm-textarea.is-invalid,
+.pgm-select.is-invalid {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, .1);
+}
+
+.pgm-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Counter karakter */
+.pgm-char-counter {
+    display: flex;
+    justify-content: flex-end;
+    font-size: .72rem;
+    color: #94a3b8;
+    margin-top: 4px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.pgm-char-counter.warn {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.pgm-char-counter.limit {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+/* Pesan error field */
+.pgm-field-error {
+    font-size: .75rem;
+    color: #dc2626;
+    margin-top: 4px;
+    font-family: 'Poppins', sans-serif;
+    display: none;
+}
+
+.pgm-field-error.show {
+    display: block;
+}
+
+/* Grid 2 kolom untuk badge */
+.pgm-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+/* File input */
+.pgm-file-input {
+    width: 100%;
+    padding: 9px 14px;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 9px;
+    font-family: 'Poppins', sans-serif;
+    font-size: .8rem;
+    color: #64748b;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: border-color .2s;
+    box-sizing: border-box;
+}
+
+.pgm-file-input:hover {
+    border-color: #6366f1;
+}
+
+/* Preview gambar di modal edit */
+.pgm-img-preview {
+    max-height: 80px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 8px;
+    display: none;
+    object-fit: cover;
+}
+
+/* Checkbox aktif */
+.pgm-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: .875rem;
+    font-weight: 400;
+    color: #374151;
+    user-select: none;
+}
+
+.pgm-checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #6366f1;
+    cursor: pointer;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   7. TOMBOL MODAL (Simpan / Batal)
+   ══════════════════════════════════════════════════════════════ */
+.pgm-btn-batal {
+    padding: 10px 20px;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    font-family: 'Poppins', sans-serif;
+    font-size: .875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.pgm-btn-batal:hover {
+    background: #e2e8f0;
+}
+
+.pgm-btn-simpan {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-family: 'Poppins', sans-serif;
+    font-size: .875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, .3);
+}
+
+.pgm-btn-simpan:hover:not(:disabled) {
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, .4);
+}
+
+.pgm-btn-simpan:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   8. SCROLLBAR MODAL (opsional, Webkit)
+   ══════════════════════════════════════════════════════════════ */
+.pgm-modal-card::-webkit-scrollbar {
+    width: 5px;
+}
+
+.pgm-modal-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.pgm-modal-card::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}

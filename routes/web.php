@@ -4,12 +4,13 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PengajuanController;
-use App\Http\Controllers\EvaluasiPugController; // ✅ TAMBAHKAN INI
+use App\Http\Controllers\EvaluasiPugController;
+use App\Http\Controllers\Admin\ManageUserController;
+use App\Http\Controllers\Admin\PengumumanController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Http\Request;
 
-Route::get('/', function () {
-    return view('start.home');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::middleware('auth')->group(function () {
 
@@ -50,8 +51,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/permintaan', [PengajuanController::class, 'adminContent']);
             Route::get('/verifikasi', [PengajuanController::class, 'verifikasiContent']);
             Route::get('/dokumen-masuk', [PengajuanController::class, 'dokumenMasukContent']);
-            // ✅ TAMBAHAN UNTUK PUG (Pastikan Claude sudah membuat fungsi 'index' di controllernya)
             Route::get('/evaluasi-pug', [EvaluasiPugController::class, 'index']);
+
+            Route::get('/manage_users', [ManageUserController::class, 'index']);
+            Route::get('/pengumuman', [PengumumanController::class, 'index']);
         });
 
         // ✅ ROUTING AKSI EVALUASI PUG (Berdasarkan instruksi Claude)
@@ -67,6 +70,21 @@ Route::middleware('auth')->group(function () {
             Route::get('/export/excel', [EvaluasiPugController::class, 'exportExcel'])->name('export.excel');
             Route::get('/export/pdf', [EvaluasiPugController::class, 'exportPdf'])->name('export.pdf');
         });
+
+        Route::resource('manage_users', ManageUserController::class)
+            ->names('admin.manage_users')
+            ->parameters(['manage_users' => 'user'])
+            ->except(['show', 'create', 'edit']);
+
+        Route::post('manage_users/{user}/reset-password', [ManageUserController::class, 'resetPassword'])
+            ->name('admin.manage_users.reset-password');
+
+        Route::resource('pengumuman', PengumumanController::class)
+            ->names('admin.pengumuman')
+            ->except(['show', 'create', 'edit']);
+
+        Route::post('pengumuman/{pengumuman}/toggle-status', [PengumumanController::class, 'toggleStatus'])
+            ->name('admin.pengumuman.toggle-status');
     });
 
     // ── USER ─────────────────────────────────────────────────────────────────

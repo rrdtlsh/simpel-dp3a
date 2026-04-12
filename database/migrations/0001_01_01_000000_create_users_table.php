@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Nama Bidang
-            $table->string('nip')->unique(); // Ganti Email jadi NIP
-            $table->string('role')->default('user'); // 'admin' atau 'user'
+            $table->string('name');
+            $table->string('nip')->unique();
+            $table->string('email')->unique();
+            $table->string('role')->default('user');
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
-            $table->string('email')->unique();
+            $table->foreignId('bidang_id')->nullable();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

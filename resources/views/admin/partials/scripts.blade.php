@@ -645,6 +645,10 @@ function loadPage(page, element) {
                     });
                 }
             }
+            else if (basePage === 'manage-users') { 
+            }
+            else if (basePage === 'pengumuman') { 
+            }
         })
         .catch(function(err) {
             console.error('[loadPage]', err);
@@ -790,15 +794,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var lastPage = sessionStorage.getItem('adminLastPage');
  
     if (lastPage && lastPage !== 'dashboard') {
-        var basePage = lastPage.split('?')[0]; // Memisahkan query parameter jika ada
-        var pageToMenuIndex = { 'permintaan': 1, 'verifikasi': 2, 'dokumen-masuk': 3, 'evaluasi-pug': 4 };
-        var menuIndex = pageToMenuIndex[basePage];
-        
-        if (menuIndex !== undefined) {
-            document.querySelectorAll('#menu li').forEach(function(li, i) {
-                li.classList.toggle('active', i === menuIndex);
-            });
-        }
+        var basePage = lastPage.split('?')[0]; 
+
+        document.querySelectorAll('#menu li').forEach(function(li) {
+            li.classList.remove('active');
+            var onclickAttr = li.getAttribute('onclick');
+            if (onclickAttr && onclickAttr.includes("'" + basePage + "'")) {
+                li.classList.add('active');
+            }
+        });
 
         document.getElementById('main-content').innerHTML =
             '<div style="padding:40px;text-align:center;">'
@@ -811,7 +815,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 return res.text(); 
             })
             .then(function(html) {
-                document.getElementById('main-content').innerHTML = html;
+                var mc = document.getElementById('main-content');
+                mc.innerHTML = html;
+                
+                Array.from(mc.querySelectorAll('script')).forEach(function(oldScript) {
+                var newScript = document.createElement('script');
+                Array.from(oldScript.attributes).forEach(function(attr) { 
+                    newScript.setAttribute(attr.name, attr.value); 
+                });
+                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            })
+                
                 if      (basePage === 'permintaan')    initPermintaanPage();
                 else if (basePage === 'verifikasi')    initVerifikasiPage();
                 else if (basePage === 'dokumen-masuk') initDokumenMasukPage();
@@ -835,6 +850,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             csrf: getCsrf()
                         });
                     }
+                }
+                else if (basePage === 'manage-users') { 
+                }
+                else if (basePage === 'pengumuman') { 
                 }
             })
             .catch(function(err) { 
