@@ -241,4 +241,3 @@
 </div>
 
 <link rel="stylesheet" href="/css/admin-manage-users.css">
-<script src="/js/admin-manage-users.js"></script>

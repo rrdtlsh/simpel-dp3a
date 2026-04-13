@@ -34,6 +34,8 @@
     <script src="{{ asset('js/permintaan.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/verifikasi.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/evaluasi_pug.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/admin-manage-users.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/pengumuman.js') }}?v={{ time() }}"></script>
 
     @stack('scripts')
     

@@ -352,4 +352,3 @@
     </div>
 </div>
 <link rel="stylesheet" href="/css/pengumuman.css">
-<script src="/js/pengumuman.js"></script>

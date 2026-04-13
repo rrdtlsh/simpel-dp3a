@@ -1,4 +1,4 @@
-(function () {
+window.initManageUsersPage = function () {
     'use strict';
 
     /* ── CSRF ────────────────────────────────────────────────────────── */
@@ -502,4 +502,4 @@
         });
     });
 
-})();
+};

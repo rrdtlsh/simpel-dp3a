@@ -1,8 +1,4 @@
-/**
- * FILE: public/js/admin/pengumuman.js
- */
-
-(function () {
+window.initPengumumanPage = function () {
     'use strict';
 
     var CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -253,4 +249,4 @@
     }
     document.querySelectorAll('.pgm-btn-hapus').forEach(attachHapusListener);
 
-})();
+};

@@ -609,10 +609,8 @@ function loadPage(page, element) {
         /* ❌ DIHAPUS: window.location.href = '/admin/dashboard' */
     }
 
-    /* ✅ FIX BUG 1: Simpan halaman terakhir ke sessionStorage */
     sessionStorage.setItem('adminLastPage', page);
 
-    /* Tampilkan loading spinner di area konten (bukan splash screen) */
     document.getElementById('main-content').innerHTML =
         '<div style="padding:40px;text-align:center;">'
         + '<i class="fa-solid fa-spinner fa-spin fa-2x" style="color:#067fb2;"></i>'
@@ -623,10 +621,12 @@ function loadPage(page, element) {
         .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
         .then(function(html) {
             document.getElementById('main-content').innerHTML = html;
-            if      (page === 'permintaan')    initPermintaanPage();
-            else if (page === 'verifikasi')    initVerifikasiPage();
-            else if (page === 'dokumen-masuk') initDokumenMasukPage();
-            else if (page === 'evaluasi-pug')  {
+            
+            // ✅ FIX: Ganti 'page' menjadi 'basePage' pada pengkondisian SPA
+            if      (basePage === 'permintaan')    initPermintaanPage();
+            else if (basePage === 'verifikasi')    initVerifikasiPage();
+            else if (basePage === 'dokumen-masuk') initDokumenMasukPage();
+            else if (basePage === 'evaluasi-pug')  {
                 if (typeof EvaluasiPUG !== 'undefined') {
                     EvaluasiPUG.init({
                         isAdmin: true,
@@ -645,9 +645,11 @@ function loadPage(page, element) {
                     });
                 }
             }
-            else if (basePage === 'manage-users') { 
+            else if (basePage === 'manage-users' || basePage === 'manage_users') {
+                if (typeof window.initManageUsersPage === 'function') window.initManageUsersPage();
             }
-            else if (basePage === 'pengumuman') { 
+            else if (basePage === 'pengumuman') {
+                if (typeof window.initPengumumanPage === 'function') window.initPengumumanPage();
             }
         })
         .catch(function(err) {
@@ -819,13 +821,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 mc.innerHTML = html;
                 
                 Array.from(mc.querySelectorAll('script')).forEach(function(oldScript) {
-                var newScript = document.createElement('script');
-                Array.from(oldScript.attributes).forEach(function(attr) { 
-                    newScript.setAttribute(attr.name, attr.value); 
+                    var newScript = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(function(attr) { 
+                        newScript.setAttribute(attr.name, attr.value); 
+                    });
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
                 });
-                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            })
                 
                 if      (basePage === 'permintaan')    initPermintaanPage();
                 else if (basePage === 'verifikasi')    initVerifikasiPage();
@@ -850,19 +852,20 @@ document.addEventListener('DOMContentLoaded', function() {
                             csrf: getCsrf()
                         });
                     }
+                } // ✅ FIX UTAMA: KURUNG KURAWAL PENUTUP YANG HILANG ADA DI SINI
+                else if (basePage === 'manage-users' || basePage === 'manage_users') {
+                    if (typeof window.initManageUsersPage === 'function') window.initManageUsersPage();
                 }
-                else if (basePage === 'manage-users') { 
-                }
-                else if (basePage === 'pengumuman') { 
+                else if (basePage === 'pengumuman') {
+                    if (typeof window.initPengumumanPage === 'function') window.initPengumumanPage();
                 }
             })
             .catch(function(err) { 
-                // ✅ FIX: Jangan lempar ke Dashboard jika error, tampilkan error aslinya!
                 document.getElementById('main-content').innerHTML =
                     '<div style="padding:24px; color:#ef4444;">'
                     + '<h3><i class="fa-solid fa-triangle-exclamation"></i> Gagal Memuat Halaman</h3>'
                     + '<p>Sistem merespon dengan error: <b>' + err.message + '</b></p>'
-                    + '<p style="color:#6b7280; font-size:14px; margin-top:10px;">(Gunakan trik Developer di bawah untuk melihat detail error)</p></div>';
+                    + '<p style="color:#6b7280; font-size:14px; margin-top:10px;">(Cek koneksi internet atau script)</p></div>';
             });
     } else {
         renderDashboardContent();
