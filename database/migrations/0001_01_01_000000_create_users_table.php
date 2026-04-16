@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
-            $table->foreignId('bidang_id')->nullable();
+            //$table->foreignId('bidang_id')->nullable();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
