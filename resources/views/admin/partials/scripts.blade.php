@@ -217,7 +217,7 @@ function initPermintaanPage() {
         e.preventDefault();
         var ok=true;
         form.querySelectorAll('.validate-input').forEach(function(inp){ if(!checkValidation(inp)) ok=false; });
-        if(!ok){ Swal.fire({icon:'warning',title:'Data Belum Lengkap'}); return; }
+        if(!ok){ Swal.fire({icon:'warning',title:'Data Belum Terpenuhi'}); return; }
         var btn=form.querySelector('button[type="submit"]'), orig=btn.innerText;
         btn.disabled=true; btn.innerText='Memproses...';
         try {
