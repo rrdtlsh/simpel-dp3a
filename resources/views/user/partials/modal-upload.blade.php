@@ -572,7 +572,7 @@
                 var fileLines = files.map(function (f) { return '<small style="color:#6b7280;">✓ ' + f.name + '</small>'; }).join('<br>');
 
                 Swal.fire({
-                    icon : 'success', title: 'Berhasil Disimpan!',
+                    icon : 'success', title: 'Berhasil Diupload!',
                     html : '<strong>' + (res.data.total_files || files.length) + ' file</strong> berhasil disimpan.' + (fileLines ? '<br><br>' + fileLines : ''),
                     confirmButtonText: 'Oke', confirmButtonColor: '#4f46e5', allowOutsideClick: false,
                     willOpen: function () {
