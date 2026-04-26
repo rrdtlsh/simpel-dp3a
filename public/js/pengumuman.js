@@ -150,6 +150,14 @@ window.initPengumumanPage = function () {
             formEdit.dataset.editId = this.dataset.id;
             formEdit.dataset.action = this.dataset.url;
 
+            // ✅ SIMPAN SNAPSHOT DATA AWAL (Untuk mendeteksi perubahan)
+            formEdit.dataset.originalJudul = this.dataset.judul || '';
+            formEdit.dataset.originalKonten = this.dataset.konten || '';
+            formEdit.dataset.originalBadgeLabel = this.dataset.badgeLabel || '';
+            formEdit.dataset.originalBadgeColor = this.dataset.badgeColor || '#067fb2';
+            formEdit.dataset.originalIsActive = this.dataset.isActive === '1' ? '1' : '0';
+
+            // Isi ke form
             document.getElementById('editJudul').value = this.dataset.judul;
             document.getElementById('editKonten').value = this.dataset.konten;
             document.getElementById('editBadgeLabel').value = this.dataset.badgeLabel;
@@ -160,7 +168,10 @@ window.initPengumumanPage = function () {
             if (this.dataset.gambarUrl) { img.src = this.dataset.gambarUrl; img.style.display = 'block'; }
             else { img.style.display = 'none'; }
 
-            // ✅ FIX: Picu counter agar muncul saat edit dibuka
+            // Kosongkan input file jika sebelumnya ada
+            var fileInput = document.getElementById('editGambar');
+            if (fileInput) fileInput.value = '';
+
             ['editJudul', 'editKonten', 'editBadgeLabel'].forEach(function (id) {
                 document.getElementById(id)?.dispatchEvent(new Event('input'));
             });
@@ -172,6 +183,31 @@ window.initPengumumanPage = function () {
 
     formEdit?.addEventListener('submit', function (e) {
         e.preventDefault();
+
+        // ✅ DETEKSI PERUBAHAN
+        var currentJudul = document.getElementById('editJudul').value.trim();
+        var currentKonten = document.getElementById('editKonten').value.trim();
+        var currentBadgeLabel = document.getElementById('editBadgeLabel').value.trim();
+        var currentBadgeColor = document.getElementById('editBadgeColor').value.trim();
+        var currentIsActive = document.getElementById('editIsActive').checked ? '1' : '0';
+        var hasNewImage = document.getElementById('editGambar').files.length > 0;
+
+        if (!hasNewImage &&
+            currentJudul === formEdit.dataset.originalJudul &&
+            currentKonten === formEdit.dataset.originalKonten &&
+            currentBadgeLabel === formEdit.dataset.originalBadgeLabel &&
+            currentBadgeColor === formEdit.dataset.originalBadgeColor &&
+            currentIsActive === formEdit.dataset.originalIsActive) {
+
+            Swal.fire({
+                icon: 'info',
+                title: 'Tidak Ada Perubahan',
+                text: 'Anda belum mengubah data apapun pada pengumuman ini.',
+                confirmButtonColor: '#067fb2'
+            });
+            return; // Hentikan proses simpan
+        }
+
         clearFieldErrors(formEdit);
         setLoading(btnUpdate, true);
 
@@ -185,7 +221,11 @@ window.initPengumumanPage = function () {
                     Swal.fire({ icon: 'success', title: 'Berhasil!', text: res.data.message, timer: 1500, showConfirmButton: false });
                     loadPage('pengumuman');
                 } else if (res.status === 422) {
-                    applyServerErrors(formEdit, res.data.errors || {});
+                    if (res.data.message && !res.data.errors) {
+                        Swal.fire('Info', res.data.message, 'info'); // Tangkap error jika backend menolak karena tdk ada perubahan
+                    } else {
+                        applyServerErrors(formEdit, res.data.errors || {});
+                    }
                 }
             })
             .catch(function (err) { Swal.fire({ icon: 'error', title: 'Gagal', text: err.message }); })

@@ -1,7 +1,3 @@
-{{-- FILE: resources/views/start/home.blade.php --}}
-{{-- CATATAN: Hanya section news-grid yang diubah menjadi dinamis. --}}
-{{-- Semua section lain (hero, manual-book, maps) tetap sama persis. --}}
-
 @extends('start.layout')
 
 @section('title', 'Beranda | SIMPEL DP3A')
@@ -39,10 +35,14 @@
             <div class="dropdown-content">
                 <a href="#">Sekretariat</a>
                 <a href="#">Perencanaan</a>
-                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Kualitas%20Hidup%20Perempuan" target="_blank">Kualitas Hidup Perempuan</a>
-                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Pemenuhan%20Hak%20Anak" target="_blank">Pemenuhan Hak Anak</a>
-                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Perlindungan%20Perempuan" target="_blank">Perlindungan Perempuan</a>
-                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Perlindungan%20Khusus%20Anak" target="_blank">Perlindungan Khusus Anak</a>
+                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Kualitas%20Hidup%20Perempuan"
+                target="_blank">Kualitas Hidup Perempuan</a>
+                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Pemenuhan%20Hak%20Anak"
+                target="_blank">Pemenuhan Hak Anak</a>
+                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Perlindungan%20Perempuan"
+                target="_blank">Perlindungan Perempuan</a>
+                <a href="https://dpppa.banjarmasinkota.go.id/search/label/Perlindungan%20Khusus%20Anak"
+                target="_blank">Perlindungan Khusus Anak</a>
             </div>
         </div>
 
@@ -59,7 +59,6 @@
     </a>
 </nav>
 
-{{-- ── Hero Section ──────────────────────────────────────────────────── --}}
 <section class="hero-section">
     <div class="hero-overlay"></div>
     <div class="hero-container">
@@ -92,12 +91,6 @@
     </div>
 </section>
 
-
-{{-- ════════════════════════════════════════════════════════════════════
-     SECTION PENGUMUMAN — DINAMIS DARI DATABASE
-     $pengumumans dikirim dari HomeController::index()
-     Hanya menampilkan data dengan is_active = true
-     ════════════════════════════════════════════════════════════════════ --}}
 <section class="news" id="pengumuman">
     <div class="container">
 
@@ -138,10 +131,7 @@
 
     </div>
 </section>
-{{-- ════════════════════════════════════════════════════════════════════ --}}
 
-
-{{-- ── Manual Book Section ─────────────────────────────────────────── --}}
 <section class="manual-section" id="manual-book">
     <div class="container">
         <h2 class="section-title">Manual Book</h2>
@@ -180,7 +170,6 @@
     </div>
 </section>
 
-{{-- ── Lokasi Kantor Section ────────────────────────────────────────── --}}
 <section class="maps-section" id="lokasi-kantor">
     <div class="container">
         <h2 class="section-title">Lokasi Kantor</h2>
@@ -222,14 +211,12 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-    // Cegah restore scroll posisi otomatis browser
     if (history.scrollRestoration) {
         history.scrollRestoration = 'manual';
     } else {
         window.onbeforeunload = function () { window.scrollTo(0, 0); };
     }
 
-    // Sembunyikan loader setelah halaman selesai dimuat
     window.addEventListener('load', function () {
         var loader = document.getElementById('loader');
         setTimeout(function () {
@@ -241,7 +228,6 @@
         }, 800);
     });
 
-    // Reveal on scroll
     window.addEventListener('scroll', function () {
         document.querySelectorAll('.reveal').forEach(function (el) {
             if (el.getBoundingClientRect().top < window.innerHeight - 100) {
@@ -250,7 +236,6 @@
         });
     });
 
-    // Swiper manual book
     var bookSwiper = new Swiper('.bookSwiper', {
         effect          : 'cards',
         grabCursor      : true,

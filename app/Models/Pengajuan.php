@@ -21,25 +21,21 @@ class Pengajuan extends Model
         'due_date' => 'datetime',
     ];
 
-    // Relasi ke Bidang
     public function bidang()
     {
         return $this->belongsTo(Bidang::class);
     }
 
-    // relasi ke file upload user
     public function files()
     {
         return $this->hasMany(PengajuanFile::class);
     }
 
-    // relasi admin pembuat
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // Scope untuk filter otomatis
     public function scopeForCurrentUserBidang($query)
     {
         $user = Auth::user();

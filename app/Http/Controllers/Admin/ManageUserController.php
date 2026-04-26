@@ -27,17 +27,20 @@ class ManageUserController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'name'             => ['required', 'string', 'max:50', 'unique:users,name'],
+            'name'             => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z\s]+$/', 'unique:users,name'],
             'nip'              => ['required', 'digits:18', 'unique:users,nip'],
             'email'            => ['required', 'email', 'max:50', 'unique:users,email'],
             'password'         => ['required', 'string', 'min:6', 'max:18'],
             'role'             => ['required', 'in:admin,user'],
-            'bidang_id'        => ['nullable'],
-            'nama_bidang_baru' => ['nullable', 'string', 'max:50'],
+            'bidang_id'        => [Rule::requiredIf(fn() => $request->role === 'user')],
+            'nama_bidang_baru' => [Rule::requiredIf(fn() => $request->bidang_id === 'baru'), 'nullable', 'string', 'max:50'],
         ], [
             'name.required'      => 'Nama lengkap wajib diisi.',
+            'name.regex'         => 'Nama tidak boleh mengandung karakter non-huruf/angka.',
             'name.unique'        => 'Nama ini sudah digunakan oleh akun lain.',
             'name.max'           => 'Nama maksimal 50 karakter.',
+            'bidang_id.required' => 'Bidang wajib dipilih.',
+            'nama_bidang_baru.required' => 'Nama bidang baru wajib diisi.',
             'nip.required'       => 'NIP wajib diisi.',
             'nip.digits'         => 'NIP harus tepat 18 digit angka.',
             'nip.unique'         => 'NIP ini sudah digunakan oleh akun lain.',
@@ -71,20 +74,18 @@ class ManageUserController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
-            'name'             => ['required', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
+            'name'             => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z\s]+$/', Rule::unique('users')->ignore($user->id)],
             'nip'              => ['required', 'digits:18', Rule::unique('users')->ignore($user->id)],
             'email'            => ['required', 'email', 'max:50', Rule::unique('users')->ignore($user->id)],
             'role'             => ['required', 'in:admin,user'],
-            /*
-             * ✅ FIX VALIDASI PASSWORD EDIT:
-             * nullable → kosong = tidak ubah password (valid)
-             * confirmed → jika diisi, cek password_confirmation
-             */
             'password'         => ['nullable', 'string', 'min:6', 'max:18', 'confirmed'],
-            'bidang_id'        => ['nullable'],
-            'nama_bidang_baru' => ['nullable', 'string', 'max:50'],
+            'bidang_id'        => [Rule::requiredIf(fn() => $request->role === 'user')],
+            'nama_bidang_baru' => [Rule::requiredIf(fn() => $request->bidang_id === 'baru'), 'nullable', 'string', 'max:50'],
         ], [
+            'name.regex'         => 'Nama tidak boleh mengandung karakter non-huruf/angka.',
             'name.unique'        => 'Nama ini sudah digunakan oleh akun lain.',
+            'bidang_id.required' => 'Bidang wajib dipilih.',
+            'nama_bidang_baru.required' => 'Nama bidang baru wajib diisi.',
             'nip.digits'         => 'NIP harus tepat 18 digit angka.',
             'nip.unique'         => 'NIP ini sudah digunakan oleh akun lain.',
             'email.email'        => 'Format email tidak valid.',

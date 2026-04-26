@@ -25,13 +25,11 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // Relasi ke bidang
     public function bidang()
     {
         return $this->belongsTo(Bidang::class);
     }
 
-    // Scope helper: filter query berdasarkan bidang user login
     public function scopeForCurrentUserBidang($query)
     {
         $user = Auth::user();
@@ -40,18 +38,13 @@ class User extends Authenticatable
             return $query;
         }
 
-        // Admin bisa lihat semua
         if ($user->role === 'admin') {
             return $query;
         }
 
-        // User biasa: filter berdasarkan bidang_id-nya
         return $query->where('bidang_id', $user->bidang_id);
     }
 
-    /**
-     * Cast attributes
-     */
     protected function casts(): array
     {
         return [

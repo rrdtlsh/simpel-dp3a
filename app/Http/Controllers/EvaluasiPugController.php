@@ -110,8 +110,8 @@ class EvaluasiPugController extends Controller
         $validator = Validator::make($request->all(), [
             'pertanyaan_id' => 'required|exists:pug_pertanyaan,id',
             'tahun'         => 'required|integer|min:2020|max:2030',
-            'jawaban_kode'  => 'nullable|string|max:100',  // ✅ Boleh Kosong
-            'jawaban_label' => 'nullable|string|max:500',  // ✅ Boleh Kosong
+            'jawaban_kode'  => 'nullable|string|max:100',
+            'jawaban_label' => 'nullable|string|max:500',
             'catatan'       => 'nullable|string|max:1000|regex:/^[^<>{}\[\]\\\\]*$/',
             'skor'          => 'nullable|numeric|min:0',
         ]);
@@ -133,7 +133,6 @@ class EvaluasiPugController extends Controller
             $sebelum = $jawaban->exists ? $jawaban->toArray() : null;
             $isNew = !$jawaban->exists;
 
-            // ✅ JIKA JAWABAN KOSONG, KEMBALIKAN STATUS KE 'belum'
             $statusBaru = empty($request->jawaban_kode) ? 'belum' : 'diisi';
 
             $jawaban->fill([
@@ -141,7 +140,7 @@ class EvaluasiPugController extends Controller
                 'jawaban_label' => $request->jawaban_label,
                 'catatan'       => $request->catatan,
                 'skor'          => $request->skor ?? 0,
-                'status'        => $statusBaru, // ✅ Simpan status dinamis
+                'status'        => $statusBaru,
                 'diisi_oleh'    => Auth::id(),
             ])->save();
 
@@ -301,13 +300,15 @@ class EvaluasiPugController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'indikator_id'    => 'required|exists:pug_indikator,id',
-            'kode'            => 'required|string|max:20|regex:/^[0-9.]+$/',
-            'pertanyaan'      => 'required|string|max:100',
+            'kode'            => 'required|string|max:20|regex:/^[0-9.]+$/|unique:pug_pertanyaan,kode',
+            'pertanyaan'      => 'required|string|max:100|unique:pug_pertanyaan,pertanyaan',
             'skor_maksimal'   => 'required|numeric|min:0|max:100',
             'pilihan_jawaban' => 'required|array|min:1',
             'petunjuk'        => 'nullable|string|max:500',
         ], [
             'kode.regex' => 'Kode hanya boleh berisi angka dan titik (tanpa spasi, huruf, atau simbol lain).',
+            'kode.unique' => 'Kode pertanyaan sudah digunakan, silakan gunakan kode lain.',
+            'pertanyaan.unique' => 'Pertanyaan ini sudah ada di dalam sistem.',
         ]);
 
         if ($validator->fails()) {
@@ -334,13 +335,15 @@ class EvaluasiPugController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'indikator_id'    => 'required|exists:pug_indikator,id',
-            'kode'            => 'required|string|max:20|regex:/^[0-9.]+$/',
-            'pertanyaan'      => 'required|string|max:100',
+            'kode'            => 'required|string|max:20|regex:/^[0-9.]+$/|unique:pug_pertanyaan,kode,' . $id,
+            'pertanyaan'      => 'required|string|max:100|unique:pug_pertanyaan,pertanyaan,' . $id,
             'skor_maksimal'   => 'required|numeric|min:0|max:100',
             'pilihan_jawaban' => 'required|array|min:1',
             'petunjuk'        => 'nullable|string|max:500',
         ], [
             'kode.regex' => 'Kode hanya boleh berisi angka dan titik (tanpa spasi, huruf, atau simbol lain).',
+            'kode.unique' => 'Kode pertanyaan sudah digunakan, silakan gunakan kode lain.',
+            'pertanyaan.unique' => 'Pertanyaan ini sudah ada di dalam sistem.',
         ]);
 
         if ($validator->fails()) {

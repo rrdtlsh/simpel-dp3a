@@ -103,10 +103,12 @@ class UserEvaluasiPugController extends Controller
         $validator = Validator::make($request->all(), [
             'pertanyaan_id' => 'required|exists:pug_pertanyaan,id',
             'tahun'         => 'required|integer|min:2020|max:2030',
-            'jawaban_kode'  => 'nullable|string|max:100',
-            'jawaban_label' => 'nullable|string|max:500',
+            'jawaban_kode'  => 'required|string|max:100',
+            'jawaban_label' => 'required|string|max:500',
             'catatan'       => 'nullable|string|max:1000|regex:/^[^<>{}\[\]\\\\]*$/',
-            'skor'          => 'nullable|numeric|min:0',
+            'skor'          => 'required|numeric|min:0',
+        ], [
+            'jawaban_kode.required' => 'Pilihan jawaban wajib dipilih sebelum menyimpan.',
         ]);
 
         if ($validator->fails()) {

@@ -460,8 +460,20 @@ var UserEvaluasiPUG = (function () {
         clearFieldErrors();
         var hasError = false;
 
+        if (!_state.pilihanKode) {
+            showFieldError('epugErrJawaban', 'Anda wajib memilih salah satu pilihan jawaban.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Jawaban Kosong',
+                text: 'Silakan pilih salah satu jawaban terlebih dahulu sebelum menyimpan.',
+                confirmButtonColor: '#067fb2'
+            });
+            hasError = true;
+        }
+
         var catatan = document.getElementById('epugCatatan')?.value || '';
         var illegalChars = /[<>{}\[\]\\]/;
+
         if (catatan.length > 1000) {
             showFieldError('epugErrCatatan', 'Catatan maksimal 1000 karakter.');
             hasError = true;

@@ -379,6 +379,18 @@ function initVerifikasiPage() {
     }
 
     document.getElementById('btnSaveNotes')?.addEventListener('click', function() {
+        var plainText = editor ? editor.textContent.trim() : '';
+        
+        if (plainText === '') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Catatan Kosong',
+                text: 'Anda WAJIB mengisi catatan revisi/penjelasan sebelum menyimpannya.'
+            });
+            if (editor) editor.focus();
+            return;
+        }
+
         submitVerifikasi(activePengajuanId, 'pending', 'Catatan tersimpan.');
     });
 

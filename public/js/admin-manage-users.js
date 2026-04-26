@@ -51,7 +51,7 @@ window.initManageUsersPage = function () {
         var cls = input.className;
 
         if (cls.includes('val-nama')) {
-            valid = val.length >= 3 && val.length <= 50;
+            valid = val.length >= 3 && val.length <= 50 && /^[a-zA-Z\s]+$/.test(val);
 
         } else if (cls.includes('val-nip')) {
             valid = /^\d{18}$/.test(val);
@@ -347,8 +347,34 @@ window.initManageUsersPage = function () {
             return;
         }
 
+        /* ── VALIDASI TAMBAHAN (BUG #4 & #6) ── */
+        var roleSelect = form.querySelector('[name="role"]');
+        var bidangSelect = form.querySelector('[name="bidang_id"]');
+        var bidangBaruInput = form.querySelector('[name="nama_bidang_baru"]');
+
+        // Bug #4: Jika Role = user, Bidang wajib dipilih
+        if (roleSelect && roleSelect.value === 'user' && (!bidangSelect || bidangSelect.value === '')) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Bidang wajib dipilih!'
+            });
+            return;
+        }
+
+        // Bug #6: Jika pilih "+ Tambah Bidang Baru", input teksnya tidak boleh kosong
+        if (bidangSelect && bidangSelect.value === 'baru' && (!bidangBaruInput || bidangBaruInput.value.trim() === '')) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Nama bidang baru wajib diisi!'
+            });
+            return;
+        }
+
         /* ── 3. Kirim ke server ── */
         var origHtml = btn.innerHTML;
+        // ... (biarkan sisa kode ke bawah sama)
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
 

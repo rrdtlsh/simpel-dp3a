@@ -1,8 +1,7 @@
 <div class="content">
     <div class="verif-header">
         <h2>Verifikasi Dokumen Masuk</h2>
-        
-        {{-- ✅ FITUR PENCARIAN --}}
+
         <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" id="searchVerifikasiAdmin" placeholder="Cari nama dokumen...">

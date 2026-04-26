@@ -114,7 +114,8 @@
                 <div class="modal-grid" style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px;">
                     <div class="modal-field">
                         <label>Nama Dokumen <span style="color:red">*</span></label>
-                        <input id="judul" class="modal-input validate-input" type="text" name="judul" data-type="judul" placeholder="Contoh: Laporan Evaluasi PUG" />
+                        <input id="judul" class="modal-input validate-input" type="text"name="judul" data-type="judul"
+                            placeholder="Contoh: Laporan Evaluasi PUG" />
                         <div class="invalid-feedback" id="err_judul"><i class="fa-solid fa-circle-exclamation"></i> <span></span></div>
                     </div>
                     <div class="modal-field">
@@ -142,7 +143,8 @@
                 <div class="modal-grid" style="margin-top:12px;">
                     <div class="modal-field">
                         <label>Deskripsi (Opsional)</label>
-                        <textarea id="deskripsi" class="modal-textarea validate-input" name="deskripsi" data-type="deskripsi" placeholder="Tambahkan keterangan singkat jika perlu..."></textarea>
+                        <textarea id="deskripsi" class="modal-textarea validate-input" name="deskripsi" data-type="deskripsi"
+                            placeholder="Tambahkan keterangan singkat jika perlu..."></textarea>
                         <div class="invalid-feedback" id="err_deskripsi"><i class="fa-solid fa-circle-exclamation"></i> <span></span></div>
                     </div>
                     <div class="modal-field">

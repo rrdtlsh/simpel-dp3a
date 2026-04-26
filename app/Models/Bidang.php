@@ -17,6 +17,4 @@ class Bidang extends Model
     {
         return $this->hasMany(User::class);
     }
-
-    // Nanti dokumen/pengajuan juga bisa hasMany ke sini
 }

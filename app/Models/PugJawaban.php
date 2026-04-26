@@ -7,7 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class PugJawaban extends Model
 {
     protected $table    = 'pug_jawaban';
-    protected $fillable = ['pertanyaan_id', 'tahun', 'jawaban_kode', 'jawaban_label', 'catatan', 'skor', 'status', 'diisi_oleh', 'diverifikasi_oleh', 'diverifikasi_at', 'catatan_admin'];
+    protected $fillable = [
+        'pertanyaan_id',
+        'tahun',
+        'jawaban_kode',
+        'jawaban_label',
+        'catatan',
+        'skor',
+        'status',
+        'diisi_oleh',
+        'diverifikasi_oleh',
+        'diverifikasi_at',
+        'catatan_admin'
+    ];
     protected $casts    = ['diverifikasi_at' => 'datetime'];
     public function pertanyaan()
     {

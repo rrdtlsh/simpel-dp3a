@@ -88,7 +88,7 @@
             <div class="form-group-admin">
                 <label>Nama Lengkap <span class="required">*</span></label>
                 <input type="text" id="addName" name="name" class="input-admin val-nama" maxlength="50" required placeholder="Masukkan nama lengkap">
-                <div class="err-msg">Minimal 3 karakter, maksimal 50 karakter.</div>
+                <div class="err-msg">Nama tidak boleh mengandung angka/simbol (min 3 karakter).</div>
             </div>
             <div class="form-group-admin">
                 <label>NIP <span class="required">*</span></label>
@@ -192,7 +192,7 @@
             <div class="form-group-admin">
                 <label>Nama Lengkap <span class="required">*</span></label>
                 <input type="text" id="editName" name="name" class="input-admin val-nama" maxlength="50" required>
-                <div class="err-msg">Minimal 3 karakter, maksimal 50 karakter.</div>
+                <div class="err-msg">Nama tidak boleh mengandung angka/simbol (min 3 karakter).</div>
             </div>
             <div class="form-group-admin">
                 <label>NIP <span class="required">*</span></label>

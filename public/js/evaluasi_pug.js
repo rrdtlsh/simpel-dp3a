@@ -679,11 +679,18 @@ var EvaluasiPUG = (function () {
 
         /* Kumpulkan pilihan */
         var pilihan = [];
+        var adaSkorKosong = false; // Flag untuk mengecek Bug #3
+
         document.querySelectorAll('.epug-pilihan-item').forEach(function (item) {
             var labelEl = item.querySelector('.epug-pilihan-label');
             var skorEl = item.querySelector('.epug-pilihan-skor');
             if (labelEl && labelEl.value.trim()) {
-                pilihan.push({ label: labelEl.value.trim(), skor: parseFloat(skorEl?.value) || 0 });
+                var skorValue = skorEl?.value.trim();
+                // Jika input skor sama sekali tidak diisi (kosong string)
+                if (skorValue === '') {
+                    adaSkorKosong = true;
+                }
+                pilihan.push({ label: labelEl.value.trim(), skor: parseFloat(skorValue) || 0 });
             }
         });
 
@@ -697,19 +704,15 @@ var EvaluasiPUG = (function () {
         if (!skorMaks || skorMaks < 0 || skorMaks > 100) {
             showFieldError('epugErrSkor_maksimal', 'Skor maksimal wajib diisi (0 - 100).'); hasError = true;
         }
+
+        // VALIDASI BUG #3: CEK SKOR KOSONG & SKOR MELEBIHI MAKSIMAL
         if (pilihan.length === 0) {
-            showFieldError('epugErrPilihan_jawaban', 'Minimal harus ada 1 pilihan jawaban.'); hasError = true;
-        } else {
-            // Cek apakah ada skor pilihan yang melebihi skor maksimal
-            var skorBerlebih = false;
-            pilihan.forEach(function (p) { if (p.skor > parseFloat(skorMaks)) skorBerlebih = true; });
-            if (skorBerlebih) {
-                showFieldError('epugErrPilihan_jawaban', 'Skor pilihan jawaban tidak boleh melebihi Skor Maksimal!');
-                hasError = true;
-            }
-        }
-        if (pilihan.length === 0) {
-            showFieldError('epugErrPilihan_jawaban', 'Minimal harus ada 1 pilihan jawaban.'); hasError = true;
+            showFieldError('epugErrPilihan_jawaban', 'Minimal harus ada 1 pilihan jawaban.');
+            hasError = true;
+        } else if (adaSkorKosong) {
+            showFieldError('epugErrPilihan_jawaban', 'Skor pada setiap pilihan jawaban wajib diisi (tidak boleh dikosongkan).');
+            Swal.fire('Peringatan', 'Skor pada setiap pilihan jawaban wajib diisi!', 'warning');
+            hasError = true;
         } else {
             var skorBerlebih = false;
             pilihan.forEach(function (p) { if (p.skor > parseFloat(skorMaks)) skorBerlebih = true; });
@@ -735,15 +738,20 @@ var EvaluasiPUG = (function () {
             .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d, status: r.status }; }); })
             .then(function (res) {
                 if (res.ok && res.data.success) {
-                    Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1500, showConfirmButton: false });
+                    Swal.fire({ icon: 'success', title: 'Tersimpan!', text: 'Data pertanyaan berhasil disimpan.', timer: 1500, showConfirmButton: false });
                     closeModal('epugModalTambah');
                     if (typeof loadPage === 'function') loadPage('evaluasi-pug?tahun=' + (_state.tahun || new Date().getFullYear()));
                 } else if (res.status === 422) {
-                    // Validasi dari server (Laravel)
+                    // Penanganan Error dari Server (Termasuk BUG #2 - Duplikasi Kode/Pertanyaan)
                     var errs = res.data.errors || {};
+                    var errorMsgArray = [];
                     Object.keys(errs).forEach(function (f) {
                         showFieldError('epugErr' + f.charAt(0).toUpperCase() + f.slice(1), errs[f][0]);
+                        errorMsgArray.push(errs[f][0]);
                     });
+
+                    // Tampilkan pop-up peringatan jika validasi gagal di backend
+                    Swal.fire('Validasi Gagal', errorMsgArray.join('<br>'), 'warning');
                 } else {
                     Swal.fire('Gagal', res.data.message || 'Terjadi kesalahan.', 'error');
                 }

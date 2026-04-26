@@ -1,7 +1,5 @@
 <?php
 
-// FILE: app/Http/Controllers/Admin/PengumumanController.php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -15,7 +13,6 @@ use Illuminate\View\View;
 
 class PengumumanController extends Controller
 {
-    // ── Index (SPA partial view) ──────────────────────────────────────
     public function index(): View
     {
         $pengumumans = Pengumuman::with('creator')
@@ -28,7 +25,6 @@ class PengumumanController extends Controller
         return view('admin.pengumuman.index', compact('pengumumans'));
     }
 
-    // ── Store (AJAX — JSON, tanpa redirect) ───────────────────────────
     public function store(StorePengumumanRequest $request): JsonResponse
     {
         if (Pengumuman::count() >= 6) {
@@ -57,7 +53,6 @@ class PengumumanController extends Controller
         ], 201);
     }
 
-    // ── Update (AJAX — JSON, tanpa redirect) ──────────────────────────
     public function update(UpdatePengumumanRequest $request, Pengumuman $pengumuman): JsonResponse
     {
         $data = [
@@ -75,7 +70,17 @@ class PengumumanController extends Controller
             $data['gambar'] = $request->file('gambar')->store('pengumuman', 'public');
         }
 
-        $pengumuman->update($data);
+        $pengumuman->fill($data);
+
+        // Jika tidak ada field yang berubah DAN tidak ada file gambar baru yang diupload
+        if (!$pengumuman->isDirty() && !$request->hasFile('gambar')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada perubahan data yang disimpan.',
+            ], 422);
+        }
+
+        $pengumuman->save();
 
         return response()->json([
             'success'    => true,
@@ -84,7 +89,6 @@ class PengumumanController extends Controller
         ]);
     }
 
-    // ── Destroy ───────────────────────────────────────────────────────
     public function destroy(Pengumuman $pengumuman): JsonResponse
     {
         if ($pengumuman->gambar && Storage::disk('public')->exists($pengumuman->gambar)) {
@@ -99,7 +103,6 @@ class PengumumanController extends Controller
         ]);
     }
 
-    // ── Toggle Status ─────────────────────────────────────────────────
     public function toggleStatus(Pengumuman $pengumuman): JsonResponse
     {
         $pengumuman->update(['is_active' => ! $pengumuman->is_active]);
@@ -111,7 +114,6 @@ class PengumumanController extends Controller
         ]);
     }
 
-    // ── Private: format baris untuk JSON response ─────────────────────
     private function formatRow(Pengumuman $p): array
     {
         return [

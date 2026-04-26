@@ -132,14 +132,24 @@ class PengajuanController extends Controller
         $validated = $request->validate([
             'status'      => 'required|in:pending,approved,rejected',
             'admin_notes' => [
-                'nullable',
+                // Wajib diisi jika tombol yang ditekan adalah Simpan(pending) atau Tolak(rejected)
+                'required_if:status,pending,rejected',
+                'nullable', // Boleh kosong HANYA jika statusnya approved (Diterima)
                 'string',
                 function ($attr, $value, $fail) {
-                    $plainText = trim(strip_tags(html_entity_decode($value)));
-                    if (mb_strlen($plainText) > 500) $fail('Catatan revisi terlalu panjang (maksimal 500 karakter teks).');
+                    if (!empty($value)) {
+                        $plainText = trim(strip_tags(html_entity_decode($value)));
+                        if (mb_strlen($plainText) > 500) $fail('Catatan revisi terlalu panjang (maksimal 500 karakter teks).');
+                    }
                 }
             ]
+        ], [
+            // Kustomisasi pesan error (opsional)
+            'admin_notes.required_if' => 'Catatan revisi wajib diisi saat menyimpan atau menolak dokumen.',
         ]);
+
+        $file = PengajuanFile::where('pengajuan_id', $id)->latest()->first();
+        // ... (sisanya biarkan sama persis ke bawah)
 
         $file = PengajuanFile::where('pengajuan_id', $id)->latest()->first();
 
