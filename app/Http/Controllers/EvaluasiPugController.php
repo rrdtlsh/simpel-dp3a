@@ -19,12 +19,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class EvaluasiPugController extends Controller
 {
-    // ──────────────────────────────────────────────────────────────────
-    // SPA CONTENT ENDPOINT (INDEX)
-    // ──────────────────────────────────────────────────────────────────
     public function index(Request $request)
     {
-        // Pastikan tahun dikonversi menjadi integer agar filter database akurat
         $tahun = (int) $request->get('tahun', date('Y'));
 
         $komponen = PugKomponen::with([
@@ -33,7 +29,6 @@ class EvaluasiPugController extends Controller
             }
         ])->where('aktif', true)->orderBy('urutan')->get();
 
-        // Variabel untuk menyimpan kalkulasi Total Skor & Grafik
         $totalSkor = 0;
         $totalMaks = 0;
         $chartData = [
@@ -47,7 +42,6 @@ class EvaluasiPugController extends Controller
                 foreach ($indk->pertanyaan as $pert) {
                     $totalMaks += $pert->skor_maksimal;
 
-                    // Filter ulang secara ketat berdasarkan tahun
                     $jwb = $pert->jawaban->where('tahun', $tahun)->first();
                     if ($jwb && in_array($jwb->status, ['diisi', 'disetujui'])) {
                         $skorKomp += $jwb->skor;
@@ -55,7 +49,6 @@ class EvaluasiPugController extends Controller
                     }
                 }
             }
-            // Masukkan data per komponen ke grafik (Misal: "A", "B", dll)
             $chartData['categories'][] = 'Komp ' . $komp->kode;
             $chartData['series'][]     = round($skorKomp, 2);
         }
@@ -72,10 +65,6 @@ class EvaluasiPugController extends Controller
         ));
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    // DETAIL PERTANYAAN (untuk modal)
-    // GET /admin/evaluasi-pug/pertanyaan/{id}?tahun=2025
-    // ──────────────────────────────────────────────────────────────────
     public function show(Request $request, $id)
     {
         $tahun      = $request->get('tahun', date('Y'));
@@ -102,9 +91,6 @@ class EvaluasiPugController extends Controller
         ]);
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    // SIMPAN JAWABAN
-    // ──────────────────────────────────────────────────────────────────
     public function simpanJawaban(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -169,15 +155,12 @@ class EvaluasiPugController extends Controller
         return response()->json(['success' => true, 'message' => 'Jawaban berhasil disimpan.']);
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    // UPLOAD LAMPIRAN
-    // ──────────────────────────────────────────────────────────────────
     public function uploadLampiran(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'pertanyaan_id' => 'required|exists:pug_pertanyaan,id',
             'tahun'         => 'required|integer',
-            'file'          => 'required|array|max:10', // ✅ Maksimal 10 file per kirim
+            'file'          => 'required|array|max:10',
             'file.*'        => 'required|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
         ], [
             'file.*.max'   => 'Masing-masing file maksimal 10 MB.',
@@ -201,7 +184,6 @@ class EvaluasiPugController extends Controller
         $jumlahLampiranSaatIni = PugJawabanLampiran::where('jawaban_id', $jawaban->id)->count();
         $jumlahUpload = count($request->file('file'));
 
-        // ✅ Validasi jika total file yg ada + file yg baru diupload > 10
         if ($jumlahLampiranSaatIni + $jumlahUpload > 10) {
             return response()->json([
                 'success' => false,
@@ -229,15 +211,11 @@ class EvaluasiPugController extends Controller
 
         return response()->json([
             'success'    => true,
-            'lampirans'  => $lampirans, // ✅ Kirim balik semua file yg diupload
+            'lampirans'  => $lampirans,
             'jawaban_id' => $jawaban->id
         ]);
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    // HAPUS LAMPIRAN
-    // DELETE /admin/evaluasi-pug/lampiran/{id}
-    // ──────────────────────────────────────────────────────────────────
     public function hapusLampiran($id)
     {
         $lampiran = PugJawabanLampiran::findOrFail($id);
@@ -251,10 +229,6 @@ class EvaluasiPugController extends Controller
         return response()->json(['success' => true]);
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    // ADMIN: VERIFIKASI (SETUJUI / TOLAK)
-    // POST /admin/evaluasi-pug/verifikasi
-    // ──────────────────────────────────────────────────────────────────
     public function verifikasi(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -292,10 +266,6 @@ class EvaluasiPugController extends Controller
         return response()->json(['success' => true, 'message' => 'Verifikasi berhasil.']);
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    // TAMBAH PERTANYAAN (ADMIN)
-    // POST /admin/evaluasi-pug/pertanyaan
-    // ──────────────────────────────────────────────────────────────────
     public function tambahPertanyaan(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -328,9 +298,6 @@ class EvaluasiPugController extends Controller
         return response()->json(['success' => true, 'pertanyaan' => $pertanyaan]);
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    // EDIT PERTANYAAN (ADMIN)
-    // ──────────────────────────────────────────────────────────────────
     public function updatePertanyaan(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -350,13 +317,13 @@ class EvaluasiPugController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
         }
 
-        // ✅ ATURAN BARU: Tidak bisa edit jika ada jawaban yang Diterima atau Ditolak
         $adaJawabanTerkunci = PugJawaban::where('pertanyaan_id', $id)
             ->whereIn('status', ['disetujui', 'ditolak'])
             ->exists();
 
         if ($adaJawabanTerkunci) {
-            return response()->json(['success' => false, 'message' => 'Pertanyaan tidak dapat diedit karena sudah memiliki jawaban yang disetujui atau ditolak.'], 403);
+            return response()->json(['success' => false, 'message' => 'Pertanyaan tidak dapat diedit karena
+            sudah memiliki jawaban yang disetujui atau ditolak.'], 403);
         }
 
         $pertanyaan = PugPertanyaan::findOrFail($id);
@@ -372,22 +339,13 @@ class EvaluasiPugController extends Controller
         return response()->json(['success' => true, 'pertanyaan' => $pertanyaan]);
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    // HAPUS PERTANYAAN (ADMIN)
-    // ──────────────────────────────────────────────────────────────────
     public function hapusPertanyaan($id)
     {
-        // ✅ ATURAN BARU: Selalu bisa dihapus apapun statusnya.
-        // Data jawaban otomatis akan ikut terhapus karena foreign key onDelete('cascade')
         $pertanyaan = PugPertanyaan::findOrFail($id);
         $pertanyaan->delete();
         return response()->json(['success' => true]);
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    // EXPORT EXCEL
-    // GET /admin/evaluasi-pug/export/excel?tahun=2025
-    // ──────────────────────────────────────────────────────────────────
     public function exportExcel(Request $request)
     {
         $tahun   = $request->get('tahun', date('Y'));
@@ -418,16 +376,13 @@ class EvaluasiPugController extends Controller
             }
         }
 
-        $headings = ['Kode', 'Komponen', 'Indikator', 'Pertanyaan', 'Jawaban', 'Skor', 'Skor Maks', 'Status', 'Catatan', 'Diisi Oleh', 'Tanggal Isi', 'Lampiran'];
+        $headings = ['Kode', 'Komponen', 'Indikator', 'Pertanyaan', 'Jawaban', 'Skor', 'Skor Maks', 'Status', 'Catatan', 'Diisi Oleh',
+        'Tanggal Isi', 'Lampiran'];
         $fileName = 'hasil-input-evaluasi-mandiri-' . $tahun . '.xlsx'; // Ekstensi .xlsx murni
 
         return Excel::download(new DataExport($data, $headings), $fileName);
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    // EXPORT PDF
-    // GET /admin/evaluasi-pug/export/pdf?tahun=2025
-    // ──────────────────────────────────────────────────────────────────
     public function exportPdf(Request $request)
     {
         $tahun   = $request->get('tahun', date('Y'));

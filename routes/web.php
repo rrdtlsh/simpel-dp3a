@@ -113,7 +113,6 @@ Route::middleware('auth')->group(function () {
             ->name('export.excel');
 
         Route::prefix('evaluasi-pug')->name('evaluasi-pug.')->group(function () {
-            // Kita akan buat UserEvaluasiPugController setelah ini
             Route::get('/', [\App\Http\Controllers\UserEvaluasiPugController::class, 'index'])
                 ->name('index');
             Route::get('/pertanyaan/{id}', [\App\Http\Controllers\UserEvaluasiPugController::class, 'show'])
