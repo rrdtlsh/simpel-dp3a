@@ -149,7 +149,7 @@
                 let icon = ext === 'pdf' ? '<i class="fa-solid fa-file-pdf" style="color:#E74A3B;"></i>' : '<i class="fa-solid fa-file-word" style="color:#2563eb;"></i>';
                 return `<li style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items:center; background: #f9fafb; padding: 10px; border-radius: 6px; border: 1px solid #eee;">
                     <span style="font-size: 13px; color:#374151;">${icon} ${f.name}</span>
-                    <a href="/storage/${f.path}" target="_blank" download style="font-size: 12px; font-weight: bold; color: #067fb2; text-decoration: none;"><i class="fa-solid fa-download"></i> Unduh</a>
+                    <a href="/storage/${f.path}" target="_blank" style="font-size: 12px; font-weight: bold; color: #067fb2; text-decoration: none;"><i class="fa-solid fa-eye"></i> Lihat Berkas</a>
                 </li>`;
             }).join('');
 

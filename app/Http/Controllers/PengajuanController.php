@@ -57,26 +57,56 @@ class PengajuanController extends Controller
     {
         $validated = $request->validated();
         $dueDate = Carbon::parse($validated['due_date']);
+        $bidangInput = $request->bidang_id; // Tangkap nilai 'all' atau ID
 
-        $pengajuan = DB::transaction(function () use ($validated, $dueDate) {
-            return Pengajuan::create([
-                'judul'      => $validated['judul'],
-                'deskripsi'  => $validated['deskripsi'] ?? null,
-                'bidang_id'  => $validated['bidang_id'],
-                'tahun'      => $validated['tahun'],
-                'due_date'   => $dueDate,
-                'status'     => 'open',
-                'created_by' => Auth::id(),
-            ]);
+        // Gunakan DB::transaction agar jika gagal di tengah looping, data ditarik kembali (Rollback)
+        DB::transaction(function () use ($validated, $dueDate, $bidangInput) {
+            
+            // --- JIKA KIRIM KE SEMUA BIDANG ---
+            if ($bidangInput === 'all') {
+                $bidangs = Bidang::with('users')->get();
+                
+                foreach ($bidangs as $bidang) {
+                    $pengajuan = Pengajuan::create([
+                        'judul'      => $validated['judul'],
+                        'deskripsi'  => $validated['deskripsi'] ?? null,
+                        'bidang_id'  => $bidang->id, // Setel ke masing-masing ID
+                        'tahun'      => $validated['tahun'],
+                        'due_date'   => $dueDate,
+                        'status'     => 'open',
+                        'created_by' => Auth::id(),
+                    ]);
+
+                    // Kirim Notifikasi
+                    if ($bidang->users->isNotEmpty()) {
+                        Notification::send($bidang->users, new PermintaanBaruNotification($pengajuan));
+                    }
+                }
+            } 
+            // --- JIKA KIRIM HANYA KE 1 BIDANG ---
+            else {
+                $pengajuan = Pengajuan::create([
+                    'judul'      => $validated['judul'],
+                    'deskripsi'  => $validated['deskripsi'] ?? null,
+                    'bidang_id'  => $bidangInput,
+                    'tahun'      => $validated['tahun'],
+                    'due_date'   => $dueDate,
+                    'status'     => 'open',
+                    'created_by' => Auth::id(),
+                ]);
+
+                $bidang = Bidang::with('users')->find($bidangInput);
+                if ($bidang && $bidang->users->isNotEmpty()) {
+                    Notification::send($bidang->users, new PermintaanBaruNotification($pengajuan));
+                }
+            }
         });
 
-        $bidang = Bidang::with('users')->find($request->bidang_id);
-        if ($bidang && $bidang->users->isNotEmpty()) {
-            Notification::send($bidang->users, new PermintaanBaruNotification($pengajuan));
-        }
-
         if ($request->wantsJson() || $request->ajax()) {
-            return response()->json(['message' => 'Permintaan dokumen berhasil dibuat']);
+            $pesan = $bidangInput === 'all' 
+                ? 'Permintaan dokumen berhasil dikirim ke Seluruh Bidang.' 
+                : 'Permintaan dokumen berhasil dibuat.';
+            return response()->json(['message' => $pesan]);
         }
         return redirect()->back()->with('success', 'Permintaan dokumen berhasil dibuat');
     }
@@ -123,8 +153,9 @@ class PengajuanController extends Controller
             'bidang',
             'files' => fn($q) => $q->latest(),
         ])->latest()->get();
+        $bidangs = Bidang::orderBy('nama', 'asc')->get();
 
-        return view('admin.verifikasi.index', compact('pengajuans'));
+        return view('admin.verifikasi.index', compact('pengajuans', 'bidangs'));
     }
 
     public function review(Request $request, $id)

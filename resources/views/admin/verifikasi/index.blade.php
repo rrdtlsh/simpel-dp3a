@@ -1,10 +1,30 @@
 <div class="content">
-    <div class="verif-header">
+    <div class="verif-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
         <h2>Verifikasi Dokumen Masuk</h2>
 
-        <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="searchVerifikasiAdmin" placeholder="Cari nama dokumen...">
+        <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            {{-- FILTER BIDANG --}}
+            <select id="filterBidangVerif" class="filter-select" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; cursor: pointer; background-color: #fff; font-family: inherit;">
+                <option value="all">Semua Bidang</option>
+                @foreach($bidangs as $bidang)
+                    <option value="{{ $bidang->id }}">{{ $bidang->nama }}</option>
+                @endforeach
+            </select>
+
+            {{-- FILTER STATUS --}}
+            <select id="filterStatusVerif" class="filter-select" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; cursor: pointer; background-color: #fff; font-family: inherit;">
+                <option value="all">Semua Status</option>
+                <option value="belum_upload">Belum Diunggah</option>
+                <option value="pending">Menunggu Review</option>
+                <option value="approved">Diterima</option>
+                <option value="rejected">Ditolak</option>
+            </select>
+
+            {{-- PENCARIAN --}}
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchVerifikasiAdmin" placeholder="Cari nama dokumen...">
+            </div>
         </div>
     </div>
 
@@ -15,6 +35,7 @@
                     <th style="text-align:center; width:5%;">No</th>
                     <th style="text-align:left;">Nama Dokumen</th>
                     <th style="text-align:center;">Bidang</th>
+                    <th style="text-align:center;">Tanggal Dibuat</th>
                     <th style="text-align:center;">Deadline</th>
                     <th style="text-align:center;">Status Berkas</th>
                     <th style="text-align:center;">Aksi</th>
@@ -39,11 +60,19 @@
                 <script type="application/json" id="files-verif-{{ $row->id }}">@json($filesArray)</script>
                 <template id="admin-note-{{ $row->id }}">{!! $catatan !!}</template>
 
-                <tr class="row-data" data-judul="{{ strtolower($row->judul) }}">
+                {{-- Tambahkan data-bidang dan data-status di sini --}}
+                <tr class="row-data" 
+                    data-judul="{{ strtolower($row->judul) }}"
+                    data-bidang="{{ $row->bidang_id }}"
+                    data-status="{{ $status }}">
                     <td style="text-align:center; font-weight:700;">{{ $index + 1 }}</td>
                     <td style="text-align:left;">{{ $row->judul }}</td>
                     <td style="text-align:center;">{{ $row->bidang->nama ?? '-' }}</td>
-                    <td style="text-align:center;">{{ \Carbon\Carbon::parse($row->due_date)->format('d M Y H:i') }}</td>
+                    <td style="text-align:center;">{{ $row->created_at ? $row->created_at->format('d M Y') : '-' }}</td>
+                    <td style="text-align:center; color: #E74A3B; font-weight: 600;">
+                        {{ \Carbon\Carbon::parse($row->due_date)->format('d M Y H:i') }}
+                    </td>
+                    
                     <td style="text-align:center;">
                         @if($status === 'approved')
                             <span class="status-diterima">Diterima</span>
@@ -57,7 +86,7 @@
                     </td>
                     <td style="text-align:center;">
                         <div class="action-btn">
-                            {{-- Tombol Lihat --}}
+                            {{-- ... Tombol Aksi Anda Tetap Sama ... --}}
                             <button type="button" class="btn-view action-verifikasi {{ $status === 'belum_upload' ? 'btn-verif-disabled' : '' }}"
                                 data-id="{{ $row->id }}"
                                 data-nama="{{ $row->judul }}"
@@ -71,7 +100,6 @@
                                 <i class="fa-solid fa-eye"></i>
                             </button>
 
-                            {{-- Tombol Terima --}}
                             <button type="button" class="btn-yes action-approve {{ $status === 'belum_upload' ? 'btn-verif-disabled' : '' }}"
                                 data-id="{{ $row->id }}"
                                 data-nama="{{ $row->judul }}"
@@ -80,7 +108,6 @@
                                 <i class="fa-solid fa-check"></i>
                             </button>
 
-                            {{-- Tombol Tolak --}}
                             <button type="button" class="btn-no action-reject {{ $status === 'belum_upload' ? 'btn-verif-disabled' : '' }}"
                                 data-id="{{ $row->id }}"
                                 data-nama="{{ $row->judul }}"
@@ -93,11 +120,11 @@
                 </tr>
                 @empty
                 <tr class="verifikasi-empty-row">
-                    <td colspan="6" style="text-align: center; padding: 20px; color: #6b7280;">Belum ada pengajuan dokumen.</td>
+                    <td colspan="7" style="text-align: center; padding: 20px; color: #6b7280;">Belum ada pengajuan dokumen.</td>
                 </tr>
                 @endforelse
                 <tr id="verifikasiSearchEmpty" style="display:none;">
-                    <td colspan="6" style="text-align: center; padding: 40px 20px; background: #fff;">
+                    <td colspan="7" style="text-align: center; padding: 40px 20px; background: #fff;">
                         <i class="fa-solid fa-magnifying-glass" style="font-size:3rem; color:#d1d5db; margin-bottom: 12px; display:block;"></i>
                         <h4 style="margin: 0 0 6px 0; color: #374151; font-size: 1.1rem;">Hasil Pencarian Tidak Ditemukan</h4>
                         <p style="margin: 0; color: #9ca3af; font-size: 0.85rem;">Coba gunakan kata kunci pencarian yang lain.</p>

@@ -250,37 +250,55 @@ document.addEventListener('DOMContentLoaded', function () {
 @endif
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   6. FITUR HALAMAN PERMINTAAN USER (Pencarian & Detail Modal)
+   6. FITUR HALAMAN PERMINTAAN USER (Filter, Pencarian & Detail Modal)
    ═══════════════════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function() {
     
-    // ✅ A. Fitur Pencarian (Search)
+    // ✅ A. Fitur Filter Status & Pencarian Nama Dokumen
     const searchInput = document.getElementById('searchPermintaanUser');
+    const statusFilter = document.getElementById('filterStatusUser');
     const emptyRow = document.getElementById('permintaanSearchEmpty');
-    
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            let filter = this.value.toLowerCase();
-            let rows = document.querySelectorAll('#tabelPermintaanUser tbody .row-data');
-            let matchCount = 0;
-            
-            rows.forEach(row => {
-                let judul = row.dataset.judul || '';
-                if(judul.includes(filter)) {
-                    row.style.display = '';
-                    matchCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
 
-            if (emptyRow) {
-                emptyRow.style.display = (matchCount === 0 && filter !== '') ? '' : 'none';
+    function filterTablePermintaanUser() {
+        let rows = document.querySelectorAll('#tabelPermintaanUser tbody .row-data');
+        let searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        let statusTerm = statusFilter ? statusFilter.value : 'all';
+        let matchCount = 0;
+
+        rows.forEach(row => {
+            let judul = row.dataset.judul || '';
+            let status = row.dataset.status || '';
+
+            let matchSearch = searchTerm === '' || judul.includes(searchTerm);
+            let matchStatus = statusTerm === 'all' || status === statusTerm;
+
+            if (matchSearch && matchStatus) {
+                row.style.display = '';
+                matchCount++;
+            } else {
+                row.style.display = 'none';
             }
         });
+
+        // Tampilkan pesan kosong jika tidak ada yang cocok
+        if (emptyRow) {
+            if ((searchTerm !== '' || statusTerm !== 'all') && matchCount === 0) {
+                emptyRow.style.display = 'table-row';
+            } else {
+                emptyRow.style.display = 'none';
+            }
+        }
     }
 
-    // ✅ B. Fitur Klik Tombol "Lihat" (Event Delegation)
+    // Pasang Event Listener jika elemennya ada di halaman
+    if (searchInput) {
+        searchInput.addEventListener('input', filterTablePermintaanUser);
+    }
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterTablePermintaanUser);
+    }
+
+    // ✅ B. Fitur Klik Tombol "Lihat" (Detail Modal)
     document.body.addEventListener('click', function(e) {
         const btnLihat = e.target.closest('.action-lihat-user');
         if (btnLihat) {
@@ -304,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 let icon = ext === 'pdf' ? '<i class="fa-solid fa-file-pdf" style="color:#E74A3B;"></i>' : '<i class="fa-solid fa-file-word" style="color:#2563eb;"></i>';
                 return `<li style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items:center; background: #f9fafb; padding: 10px; border-radius: 6px; border: 1px solid #eee;">
                     <span style="font-size: 13px; color:#374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70%;">${icon} ${f.name}</span>
-                    <a href="/storage/${f.path}" target="_blank" download style="font-size: 12px; font-weight: bold; color: #067fb2; text-decoration: none; flex-shrink: 0;"><i class="fa-solid fa-download"></i> Unduh</a>
+                    <a href="/storage/${f.path}" target="_blank" style="font-size: 12px; font-weight: bold; color: #067fb2; text-decoration: none; flex-shrink: 0;"><i class="fa-solid fa-eye"></i> Lihat Berkas</a>
                 </li>`;
             }).join('');
 
@@ -326,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>`;
             }
 
-            // ✅ Merakit HTML Catatan User
+            // Merakit HTML Catatan User
             let catatanUser = btnLihat.dataset.userNotes ? btnLihat.dataset.userNotes.trim() : '';
             let userNotesHtml = '';
             if (catatanUser !== '') {
@@ -358,10 +376,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmButtonText: 'Tutup',
                 confirmButtonColor: '#6b7280',
                 width: '520px',
-                willOpen: function () {
-                    var container = document.querySelector('.swal2-container');
-                    if (container) container.style.zIndex = '99999';
-                },
             });
         }
     });

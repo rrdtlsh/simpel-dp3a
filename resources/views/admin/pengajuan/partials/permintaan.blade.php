@@ -2,11 +2,27 @@
     <div class="page-header">
         <h2 style="margin: 0;">Permintaan Dokumen</h2>
         
-        <div class="header-actions">
+        <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            {{-- FILTER BIDANG --}}
+            <select id="filterBidang" class="filter-select" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; cursor: pointer; background-color: #fff; font-family: inherit;">
+                <option value="all">Semua Bidang</option>
+                @foreach($bidangs as $bidang)
+                    <option value="{{ $bidang->id }}">{{ $bidang->nama }}</option>
+                @endforeach
+            </select>
+
+            {{-- FILTER STATUS --}}
+            <select id="filterStatus" class="filter-select" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; cursor: pointer; background-color: #fff; font-family: inherit;">
+                <option value="all">Semua Status</option>
+                <option value="belum_upload">Belum Diunggah</option>
+                <option value="pending">Menunggu Review</option>
+                <option value="approved">Selesai</option>
+            </select>
+
             {{-- ✅ FITUR PENCARIAN ADMIN --}}
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchPermintaanAdmin" oninput="searchTableAdmin()" placeholder="Cari nama dokumen...">
+                <input type="text" id="searchPermintaanAdmin" placeholder="Cari nama dokumen...">
             </div>
 
             <button type="button" id="openModal" class="btn-primary">
@@ -34,7 +50,10 @@
                         $fileUpload = $p->files->first();
                         $statusFile = $fileUpload ? strtolower(trim($fileUpload->status)) : 'belum_upload';
                     @endphp
-                    <tr class="row-data" data-judul="{{ strtolower($p->judul) }}">
+                    <tr class="row-data" 
+                        data-judul="{{ strtolower($p->judul) }}"
+                        data-bidang="{{ $p->bidang_id }}"
+                        data-status="{{ $statusFile }}">
                         <td style="font-weight:700;">{{ $index + 1 }}</td>
                         <td>{{ $p->judul }}</td>
                         <td>{{ $p->bidang->nama ?? '-' }}</td>
@@ -119,9 +138,12 @@
                         <div class="invalid-feedback" id="err_judul"><i class="fa-solid fa-circle-exclamation"></i> <span></span></div>
                     </div>
                     <div class="modal-field">
-                        <label>Bidang <span style="color:red">*</span></label>
-                        <select id="bidang_id" class="modal-select validate-input" name="bidang_id" data-type="bidang">
-                            <option value="" disabled selected>Pilih Bidang</option>
+                        <label>Bidang Tujuan <span style="color:red">*</span></label>
+                        <select id="bidang_id" class="modal-select validate-input" name="bidang_id" data-type="bidang" required>
+                            <option value="" disabled selected>Pilih Bidang Tujuan</option>
+                            <option value="all" style="font-weight: 700; color: #d4af37; background-color: #fcf9f2;">
+                                Kirim ke Semua Bidang
+                            </option>
                             @foreach($bidangs as $b)
                             <option value="{{ $b->id }}">{{ $b->nama }}</option>
                             @endforeach

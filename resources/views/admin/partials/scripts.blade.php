@@ -45,9 +45,10 @@ function renderFileList(ulElement, files) {
             '<li>'
             + '<span><i class="fa-solid fa-file" style="color:' + ic + ';margin-right:5px;"></i>'
             + escapeHtml(name) + '</span>'
-            + '<a href="/storage/' + escapeHtml(path) + '" target="_blank" download '
+            // HAPUS atribut "download", GANTI tulisan jadi "Preview/Lihat"
+            + '<a href="/storage/' + escapeHtml(path) + '" target="_blank" '
             + 'style="color:#067fb2;font-weight:bold;">'
-            + '<i class="fa-solid fa-download"></i> Download</a>'
+            + '<i class="fa-solid fa-eye"></i> Lihat Berkas</a>'
             + '</li>';
     });
 }
